@@ -2,20 +2,26 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <map>
 #include <mutex>
 
 #include "Logging.h"
 #include "arcdps-extension/arcdps_structs.h"
 #include "arcdps_unofficial_extras_releases/Definitions.h"
+#include "resource.h"
+
+#pragma comment(lib, "winmm.lib")
 
 const char* SQUAD_READY_PLUGIN_NAME = "squad_ready";
 const char* SQUAD_READY_PLUGIN_VERSION = "0.1";
 
 /* proto/globals */
+HMODULE self_dll;
 arcdps_exports arc_exports = {};
 char* arcvers;
-std::vector<std::string> trackedPlayers;
-std::mutex trackedPlayersMutex;
+std::string selfAccountName;
+std::map<std::string, UserInfo> cachedPlayers;
+std::mutex cachedPlayersMutex;
 
 /* arcdps exports */
 arc_export_func_u64 ARC_EXPORT_E6;
@@ -25,15 +31,19 @@ e3_func_ptr ARC_LOG;
 
 bool initFailed = false;
 bool extrasLoaded = false;
+bool inReadyCheck = false;
 
 /* dll attach -- from winapi */
-void dll_init(HANDLE hModule) { return; }
+void dll_init(HMODULE hModule) {
+  self_dll = hModule;
+  return;
+}
 
 /* dll detach -- from winapi */
 void dll_exit() { return; }
 
 /* dll main -- winapi */
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD ulReasonForCall,
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
                       LPVOID lpReserved) {
   switch (ulReasonForCall) {
     case DLL_PROCESS_ATTACH:
@@ -62,11 +72,11 @@ arcdps_exports* mod_init() {
   arc_exports.size = sizeof(arcdps_exports);
   arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
   arc_exports.out_build = SQUAD_READY_PLUGIN_VERSION;
+  // to not const conversion error
   // arc_exports.size = (uintptr_t)"error message if you decide to not load, sig
   // must be 0";
   log_squad("done mod_init");  // if using vs2015+, project properties > c++ >
                                // conformance mode > permissive to avoid const
-                               // to not const conversion error
   return &arc_exports;
 }
 
@@ -98,13 +108,62 @@ extern "C" __declspec(dllexport) void* get_release_addr() {
   return mod_release;
 }
 
+void ready_check_started() {
+  log_debug("ready check has started");
+  inReadyCheck = true;
+  PlaySound(MAKEINTRESOURCE(READY_CHECK), self_dll, SND_RESOURCE | SND_ASYNC);
+}
+
+void ready_check_completed() {
+  log_debug("squad is ready");
+  PlaySound(MAKEINTRESOURCE(SQUAD_READY), self_dll, SND_RESOURCE | SND_ASYNC);
+}
+
+void ready_check_ended() {
+  log_debug("ready check has ended");
+  inReadyCheck = false;
+}
+
+bool all_players_readied() {
+  // iterate through all cachedPlayers, and check readyStatus == true and
+  // in squad
+  for (auto const& [accountName, user] : cachedPlayers) {
+    if (user.Role != UserRole::SquadLeader &&
+        user.Role != UserRole::Lieutenant && user.Role != UserRole::Member) {
+      log_debug(std::format("ignoring {} because they are role {}", accountName,
+                            (int)user.Role));
+      continue;
+    }
+    if (!user.ReadyStatus) {
+      log_debug(std::format("squad not ready due to {}", accountName));
+      return false;
+    }
+  }
+  log_debug("all players are readied");
+  return true;
+}
+
+/*
+ * Ready check behaviour:
+ * - When squad leader starts a ready check, their ReadyStatus switches from
+ * false to true.
+ * - If squad leader's ReadyStatus switches from true to false, this can be:
+ *   - Ready check was cancelled.
+ *   - Ready check succeeded, and everyone is being "unreadied".
+ * - When a ready check succeeds, ordering of being "unreadied" cannot be relied
+ *   upon to detect.
+ */
 void squad_update_callback(const UserInfo* updatedUsers,
                            size_t updatedUsersCount) {
-  std::scoped_lock<std::mutex> guard(trackedPlayersMutex);
+  std::scoped_lock<std::mutex> guard(cachedPlayersMutex);
   log_squad(
       std::format("received squad callback with {} users", updatedUsersCount));
   for (size_t i = 0; i < updatedUsersCount; i++) {
     const auto user = updatedUsers[i];
+    auto userAccountName = std::string(user.AccountName);
+    if (userAccountName.at(0) == ':') {
+      userAccountName.erase(0, 1);
+    }
     log_debug(
         std::format("updated user {} accountname: {} ready: {} role: {} "
                     "jointime: {} subgroup: {}",
@@ -112,9 +171,40 @@ void squad_update_callback(const UserInfo* updatedUsers,
                     user.JoinTime, user.Subgroup));
     // User added/updated
     if (user.Role != UserRole::None) {
+      auto oldUserIt = cachedPlayers.find(userAccountName);
+      if (oldUserIt == cachedPlayers.end()) {
+        // User added
+        cachedPlayers.emplace(userAccountName, user);
+      } else {
+        // User updated
+        auto oldUser = oldUserIt->second;
+        cachedPlayers.insert_or_assign(userAccountName, user);
+
+        if (user.Role == UserRole::SquadLeader) {
+          if (user.ReadyStatus && !oldUser.ReadyStatus) {
+            // Squad leader has started a ready check
+            ready_check_started();
+          } else {
+            // Squad leader has ended a ready check, either via a complete ready
+            // check or by cancelling
+            ready_check_ended();
+          }
+        } else {
+          if (all_players_readied()) {
+            ready_check_completed();
+          }
+        }
+      }
     }
     // User removed
     else {
+      if (userAccountName == selfAccountName) {
+        // Self left squad, reset cache
+        cachedPlayers.clear();
+      } else {
+        // Remove player from cache
+        cachedPlayers.erase(userAccountName);
+      }
     }
   }
 }
@@ -137,6 +227,14 @@ struct ExtrasSubscriberInfo {
   SquadUpdateCallbackSignature SquadUpdateCallback = nullptr;
 };
 
+void update_self_user(std::string name) {
+  if (name.at(0) == ':') name.erase(0, 1);
+
+  if (selfAccountName.empty()) {
+    selfAccountName = name;
+  }
+}
+
 extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
     const ExtrasAddonInfo* pExtrasInfo, void* pSubscriberInfo) {
   extrasLoaded = true;
@@ -153,6 +251,8 @@ extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
     ExtrasSubscriberInfo* extrasSubscriberInfo =
         static_cast<ExtrasSubscriberInfo*>(pSubscriberInfo);
 
+    update_self_user(pExtrasInfo->SelfAccountName);
+
     extrasSubscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
     extrasSubscriberInfo->SquadUpdateCallback = squad_update_callback;
   }
@@ -160,6 +260,8 @@ extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
   else if (pExtrasInfo->ApiVersion == 2 && pExtrasInfo->MaxInfoVersion >= 1) {
     ExtrasSubscriberInfoV1* subscriberInfo =
         static_cast<ExtrasSubscriberInfoV1*>(pSubscriberInfo);
+
+    update_self_user(pExtrasInfo->SelfAccountName);
 
     subscriberInfo->InfoVersion = 1;
     subscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
