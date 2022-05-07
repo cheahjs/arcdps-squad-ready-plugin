@@ -18,9 +18,18 @@
     <ClInclude Include="arcdps_unofficial_extras_releases\Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="arcdps-extension\arcdps_structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

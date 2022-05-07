@@ -1,3 +1,6 @@
 [submodule "arcdps_unofficial_extras_releases"]
 	path = arcdps_unofficial_extras_releases
 	url = https://github.com/Krappa322/arcdps_unofficial_extras_releases
+[submodule "arcdps-extension"]
+	path = arcdps-extension
+	url = https://github.com/knoxfighter/arcdps-extension
