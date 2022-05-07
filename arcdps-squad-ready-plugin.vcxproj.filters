@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="arcdps-squad-ready-plugin.h">
+    <ClInclude Include="arcdps_unofficial_extras_releases\Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

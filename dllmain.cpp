@@ -1,6 +1,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <Windows.h>
+#include <mutex>
+#include <format>
+#include <string>
+#include <iostream>
+#include <string_view>
+#include "arcdps_unofficial_extras_releases/Definitions.h"
 
 /* arcdps export table */
 typedef struct arcdps_exports {
@@ -59,6 +65,9 @@ typedef struct ag {
 	uint16_t team; /* sep21+ */
 } ag;
 
+const char* SQUAD_READY_PLUGIN_NAME = "squad_ready";
+const char* SQUAD_READY_PLUGIN_VERSION = "0.1";
+
 /* proto/globals */
 uint32_t cbtcount = 0;
 arcdps_exports arc_exports;
@@ -102,6 +111,29 @@ void log_arc(char* str) {
 	return;
 }
 
+void log_all(char* str) {
+#if DEBUG
+	log_arc(str);
+#endif
+	log_file(str);
+	return;
+}
+
+void log_squad(char* str) {
+	log_all((char*)std::format("squad_ready: {}", str).c_str());
+	return;
+}
+
+void log_squad(const char* str) {
+	log_squad((char*)str);
+	return;
+}
+
+void log_squad(std::string str) {
+	log_squad((char*)str.c_str());
+	return;
+}
+
 /* dll attach -- from winapi */
 void dll_init(HANDLE hModule) {
 	return;
@@ -134,11 +166,10 @@ arcdps_exports* mod_init() {
 	arc_exports.sig = 0xFFFA;
 	arc_exports.imguivers = 18000;
 	arc_exports.size = sizeof(arcdps_exports);
-	arc_exports.out_name = "squad_ready";
-	arc_exports.out_build = "0.1";
+	arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
+	arc_exports.out_build = SQUAD_READY_PLUGIN_VERSION;
 	//arc_exports.size = (uintptr_t)"error message if you decide to not load, sig must be 0";
-	log_arc((char*)"squad_ready: done mod_init"); // if using vs2015+, project properties > c++ > conformance mode > permissive to avoid const to not const conversion error
-	log_file((char*)"squad_ready: done mod init");
+	log_squad("done mod_init"); // if using vs2015+, project properties > c++ > conformance mode > permissive to avoid const to not const conversion error
 	return &arc_exports;
 }
 
@@ -148,3 +179,45 @@ uintptr_t mod_release() {
 	return 0;
 }
 
+void squad_update_callback(const UserInfo* updatedUsers, size_t updatedUsersCount) {
+	log_squad(std::format("received squad callback with {} users", updatedUsersCount));
+	for (size_t i = 0; i < updatedUsersCount; i++) {
+		const auto user = updatedUsers[i];
+		log_squad(std::format("updated user {} accountname: {} ready: {} role: {} jointime: {} subgroup: {}", i, user.AccountName, user.ReadyStatus, (uint8_t)user.Role, user.JoinTime, user.Subgroup));
+	}
+}
+
+/**
+ * here for backwardscompatibility to unofficial extras API v1.
+ * Can be removed after it has a proper release.
+ */
+typedef void (*SquadUpdateCallbackSignature)(const UserInfo* pUpdatedUsers, uint64_t pUpdatedUsersCount);
+struct ExtrasSubscriberInfo {
+	// Null terminated name of the addon subscribing to the changes. Must be valid for the lifetime of the subcribing addon. Set to
+	// nullptr if initialization fails
+	const char* SubscriberName = nullptr;
+
+	// Called whenever anything in the squad changes. Only the users that changed are sent. If a user is removed from
+	// the squad, it will be sent with Role == UserRole::None
+	SquadUpdateCallbackSignature SquadUpdateCallback = nullptr;
+};
+
+extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
+	const ExtrasAddonInfo * pExtrasInfo, void* pSubscriberInfo) {
+	if (pExtrasInfo->ApiVersion == 1) {
+		// V1 of the unofficial extras API, treat is as that!
+		ExtrasSubscriberInfo* extrasSubscriberInfo = static_cast<ExtrasSubscriberInfo*>(pSubscriberInfo);
+
+		extrasSubscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
+		extrasSubscriberInfo->SquadUpdateCallback = squad_update_callback;
+	}
+	// MaxInfoVersion has to be higher to have enough space to hold this object
+	else if (pExtrasInfo->ApiVersion == 2 && pExtrasInfo->MaxInfoVersion >= 1) {
+		ExtrasSubscriberInfoV1* subscriberInfo = static_cast<ExtrasSubscriberInfoV1*>(pSubscriberInfo);
+
+		subscriberInfo->InfoVersion = 1;
+		subscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
+		subscriberInfo->SquadUpdateCallback = squad_update_callback;
+	}
+	log_squad("done arcdps_unofficial_extras_subscriber_init");
+}
