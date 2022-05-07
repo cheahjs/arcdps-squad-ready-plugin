@@ -65,18 +65,15 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
  * struct and strings are copied to arcdps memory only once at init */
 arcdps_exports* mod_init() {
   bool loading_successful = true;
-  /* for arcdps */
+
   memset(&arc_exports, 0, sizeof(arcdps_exports));
   arc_exports.sig = 0xFFFA;
   arc_exports.imguivers = 18000;
   arc_exports.size = sizeof(arcdps_exports);
   arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
   arc_exports.out_build = SQUAD_READY_PLUGIN_VERSION;
-  // to not const conversion error
-  // arc_exports.size = (uintptr_t)"error message if you decide to not load, sig
-  // must be 0";
-  log_squad("done mod_init");  // if using vs2015+, project properties > c++ >
-                               // conformance mode > permissive to avoid const
+
+  log_debug("done mod_init");
   return &arc_exports;
 }
 
@@ -156,7 +153,7 @@ bool all_players_readied() {
 void squad_update_callback(const UserInfo* updatedUsers,
                            size_t updatedUsersCount) {
   std::scoped_lock<std::mutex> guard(cachedPlayersMutex);
-  log_squad(
+  log_debug(
       std::format("received squad callback with {} users", updatedUsersCount));
   for (size_t i = 0; i < updatedUsersCount; i++) {
     const auto user = updatedUsers[i];
