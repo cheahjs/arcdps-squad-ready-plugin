@@ -5,15 +5,17 @@
 
 #include "arcdps-extension/arcdps_structs.h"
 
+namespace logging {
 /* log to arcdps.log, thread/async safe */
-void log_file(char* str);
+void File(char* str);
 /* log to extensions tab in arcdps log window, thread/async safe */
-void log_arc(char* str);
+void Arc(char* str);
 
-void log_squad(char* str);
-void log_squad(const char* str);
-void log_squad(std::string str);
+void Squad(char* str);
+void Squad(const char* str);
+void Squad(std::string str);
 
-void log_debug(char* str);
-void log_debug(const char* str);
-void log_debug(std::string str);
+void Debug(char* str);
+void Debug(const char* str);
+void Debug(std::string str);
+}  // namespace logging

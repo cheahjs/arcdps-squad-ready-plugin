@@ -1,55 +1,50 @@
 #include "Logging.h"
 
-void log_file(char* str) {
+void logging::File(char* str) {
   if (ARC_LOG_FILE) ARC_LOG_FILE(str);
   return;
 }
 
 /* log to extensions tab in arcdps log window, thread/async safe */
-void log_arc(char* str) {
+void logging::Arc(char* str) {
   if (ARC_LOG) ARC_LOG(str);
   return;
 }
 
-void log_all(char* str) {
+void logging::Squad(char* str) {
 #if _DEBUG
-  log_arc(str);
+  logging::Arc((char*)std::format("squad_ready: {}", str).c_str());
 #endif
-  log_file(str);
+  logging::File((char*)std::format("squad_ready: {}", str).c_str());
   return;
 }
 
-void log_squad(char* str) {
-  log_all((char*)std::format("squad_ready: {}", str).c_str());
+void logging::Squad(const char* str) {
+  logging::Squad((char*)str);
   return;
 }
 
-void log_squad(const char* str) {
-  log_squad((char*)str);
+void logging::Squad(std::string str) {
+  logging::Squad((char*)str.c_str());
   return;
 }
 
-void log_squad(std::string str) {
-  log_squad((char*)str.c_str());
-  return;
-}
-
-void log_debug(char* str) {
+void logging::Debug(char* str) {
 #if _DEBUG
-  log_squad(std::format("DEBUG: {}", str).c_str());
+  logging::Squad(std::format("DEBUG: {}", str).c_str());
 #endif
   return;
 }
 
-void log_debug(const char* str) {
+void logging::Debug(const char* str) {
 #if _DEBUG
-  log_debug((char*)str);
+  logging::Debug((char*)str);
 #endif return;
 }
 
-void log_debug(std::string str) {
+void logging::Debug(std::string str) {
 #if _DEBUG
-  log_debug((char*)str.c_str());
+  logging::Debug((char*)str.c_str());
 #endif
   return;
 }

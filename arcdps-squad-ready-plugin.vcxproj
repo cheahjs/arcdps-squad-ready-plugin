@@ -161,12 +161,18 @@
   <ItemGroup>
     <ClInclude Include="arcdps-extension\arcdps_structs.h" />
     <ClInclude Include="arcdps_unofficial_extras_releases\Definitions.h" />
+    <ClInclude Include="Audio.h" />
+    <ClInclude Include="Globals.h" />
     <ClInclude Include="Logging.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SquadTracker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Logging.cpp" />
+    <ClCompile Include="SquadTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="arcdps-squad-ready-plugin.rc" />
