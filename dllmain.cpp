@@ -10,18 +10,19 @@
 #include "SquadTracker.h"
 #include "Audio.h"
 #include "arcdps-extension/arcdps_structs.h"
+#include "arcdps-extension/UpdateCheckerBase.h"
 #include "arcdps_unofficial_extras_releases/Definitions.h"
 
 #pragma comment(lib, "winmm.lib")
 
 const char* SQUAD_READY_PLUGIN_NAME = "squad_ready";
-const char* SQUAD_READY_PLUGIN_VERSION = "0.1";
 
 /* proto/globals */
 arcdps_exports arc_exports = {};
 char* arcvers;
 AudioPlayer* audio_player;
 SquadTracker* squad_tracker;
+UpdateCheckerBase* update_checker;
 
 /* arcdps exports */
 arc_export_func_u64 ARC_EXPORT_E6;
@@ -66,6 +67,9 @@ arcdps_exports* mod_init() {
   bool loading_successful = true;
   std::string error_message = "Unknown error";
 
+  update_checker = new UpdateCheckerBase();
+  const auto& currentVersion = update_checker->GetCurrentVersion(self_dll);
+
   try {
     audio_player = new AudioPlayer();
     audio_player->Init("", "");
@@ -79,7 +83,13 @@ arcdps_exports* mod_init() {
   memset(&arc_exports, 0, sizeof(arcdps_exports));
   arc_exports.imguivers = 18000;
   arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
-  arc_exports.out_build = SQUAD_READY_PLUGIN_VERSION;
+  const std::string& version =
+      currentVersion ? update_checker->GetVersionAsString(
+                           currentVersion.value())
+                     : "Unknown";
+  char* version_c_str = new char[version.length() + 1];
+  strcpy_s(version_c_str, version.length() + 1, version.c_str());
+  arc_exports.out_build = version_c_str;
 
   if (loading_successful) {
     arc_exports.sig = 0xFFFA;
@@ -89,7 +99,7 @@ arcdps_exports* mod_init() {
     init_failed = true;
     arc_exports.sig = 0;
     const std::string::size_type size = error_message.size();
-    char* buffer = new char[size + 1];  // we need extra char for NUL
+    char* buffer = new char[error_message.length() + 1];  // we need extra char for NUL
     memcpy(buffer, error_message.c_str(), size + 1);
     arc_exports.size = (uintptr_t)buffer;
   }

@@ -13,14 +13,23 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\deps">
+      <UniqueIdentifier>{a279fed8-2c2a-4bfe-af00-55c4bf484e34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\deps">
+      <UniqueIdentifier>{97438306-3a43-407a-bf76-fd8903993fee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\deps\arcdps-extension">
+      <UniqueIdentifier>{7b4d748e-b797-4276-a0e5-7492ef6c4a25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\deps\arcdps-extension">
+      <UniqueIdentifier>{3fa50506-8e1a-4da0-961b-dc1909b98e88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\deps\unofficial_extras">
+      <UniqueIdentifier>{836b8178-11d8-47f0-a79f-0a5cfb57095e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="arcdps_unofficial_extras_releases\Definitions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="arcdps-extension\arcdps_structs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -35,6 +44,15 @@
     </ClInclude>
     <ClInclude Include="Globals.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arcdps-extension\UpdateCheckerBase.h">
+      <Filter>Header Files\deps\arcdps-extension</Filter>
+    </ClInclude>
+    <ClInclude Include="arcdps-extension\arcdps_structs.h">
+      <Filter>Header Files\deps\arcdps-extension</Filter>
+    </ClInclude>
+    <ClInclude Include="arcdps_unofficial_extras_releases\Definitions.h">
+      <Filter>Header Files\deps\unofficial_extras</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +70,9 @@
     </ClCompile>
     <ClCompile Include="Globals.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="arcdps-extension\UpdateCheckerBase.cpp">
+      <Filter>Source Files\deps\arcdps-extension</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
