@@ -92,7 +92,7 @@ arcdps_exports* mod_init() {
   arc_exports.out_build = version_c_str;
 
   if (loading_successful) {
-    arc_exports.sig = 0xFFFA;
+    arc_exports.sig = 0xBCAB9171;
     arc_exports.size = sizeof(arcdps_exports);
 
   } else {
