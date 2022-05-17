@@ -9,6 +9,7 @@
 
 #include "Globals.h"
 #include "Logging.h"
+#include "extension/Singleton.h"
 #include "resource.h"
 
 #pragma comment(lib, "winmm.lib")
@@ -27,13 +28,17 @@ class WaveFile {
   bool valid;
 };
 
-class AudioPlayer {
+class AudioPlayer : public Singleton<AudioPlayer> {
  public:
+  AudioPlayer() = default;
+
   bool Init(std::string ready_check_path, std::string squad_ready_path);
   void PlayReadyCheck();
   void PlaySquadReady();
   bool UpdateReadyCheck(std::string path);
   bool UpdateSquadReady(std::string path);
+  bool UpdateReadyCheckVolume(int volume);
+  bool UpdateSquadReadyVolume(int volume);
 
  private:
   std::unique_ptr<WaveFile> ready_check_sound;

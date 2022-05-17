@@ -5,13 +5,22 @@
 #include <map>
 #include <mutex>
 
+#include "Audio.h"
 #include "Globals.h"
 #include "Logging.h"
+#include "Settings.h"
+#include "SettingsUI.h"
 #include "SquadTracker.h"
-#include "Audio.h"
-#include "arcdps-extension/arcdps_structs.h"
-#include "arcdps-extension/UpdateCheckerBase.h"
-#include "arcdps_unofficial_extras_releases/Definitions.h"
+#include "extension/ImGui_Math.h"
+#include "extension/KeyBindHandler.h"
+#include "extension/KeyInput.h"
+#include "extension/Singleton.h"
+#include "extension/UpdateCheckerBase.h"
+#include "extension/Widgets.h"
+#include "extension/Windows/PositioningComponent.h"
+#include "extension/arcdps_structs.h"
+#include "imgui/imgui.h"
+#include "unofficial_extras/Definitions.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -20,7 +29,6 @@ const char* SQUAD_READY_PLUGIN_NAME = "squad_ready";
 /* proto/globals */
 arcdps_exports arc_exports = {};
 char* arcvers;
-AudioPlayer* audio_player;
 SquadTracker* squad_tracker;
 UpdateCheckerBase* update_checker;
 
@@ -31,11 +39,10 @@ e3_func_ptr ARC_LOG_FILE;
 e3_func_ptr ARC_LOG;
 
 bool init_failed = false;
-bool extrasLoaded = false;
 
 /* dll attach -- from winapi */
 void dll_init(HMODULE hModule) {
-  self_dll = hModule;
+  globals::self_dll = hModule;
   return;
 }
 
@@ -61,6 +68,82 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
   return 1;
 }
 
+/* window callback -- return is assigned to umsg (return zero to not be
+ * processed by arcdps or game) */
+uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+  try {
+    if (ImGuiEx::KeyCodeInputWndHandle(hWnd, uMsg, wParam, lParam)) {
+      return 0;
+    }
+
+    if (KeyBindHandler::instance().Wnd(hWnd, uMsg, wParam, lParam)) {
+      return 0;
+    }
+
+    auto const io = &ImGui::GetIO();
+
+    switch (uMsg) {
+      case WM_KEYUP:
+      case WM_SYSKEYUP: {
+        const int vkey = (int)wParam;
+        io->KeysDown[vkey] = false;
+        if (vkey == VK_CONTROL) {
+          io->KeyCtrl = false;
+        } else if (vkey == VK_MENU) {
+          io->KeyAlt = false;
+        } else if (vkey == VK_SHIFT) {
+          io->KeyShift = false;
+        }
+        break;
+      }
+      case WM_KEYDOWN:
+      case WM_SYSKEYDOWN: {
+        const int vkey = (int)wParam;
+        if (vkey == VK_CONTROL) {
+          io->KeyCtrl = true;
+        } else if (vkey == VK_MENU) {
+          io->KeyAlt = true;
+        } else if (vkey == VK_SHIFT) {
+          io->KeyShift = true;
+        }
+        io->KeysDown[vkey] = true;
+        break;
+      }
+      case WM_ACTIVATEAPP: {
+        globals::UpdateArcExports();
+        if (!wParam) {
+          io->KeysDown[globals::ARC_GLOBAL_MOD1] = false;
+          io->KeysDown[globals::ARC_GLOBAL_MOD2] = false;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  } catch (const std::exception& e) {
+    ARC_LOG_FILE("exception in mod_wnd");
+    ARC_LOG_FILE(e.what());
+    throw e;
+  }
+  return uMsg;
+}
+
+uintptr_t mod_options() {
+  settingsUI.Draw();
+
+  return 0;
+}
+
+uintptr_t mod_windows(const char* windowname) {
+  if (!windowname) {
+  }
+  return 0;
+}
+
+bool lastFrameShow = false;
+
+uintptr_t mod_imgui(uint32_t not_charsel_or_loading) { return 0; }
+
 /* initialize mod -- return table that arcdps will use for callbacks. exports
  * struct and strings are copied to arcdps memory only once at init */
 arcdps_exports* mod_init() {
@@ -68,12 +151,15 @@ arcdps_exports* mod_init() {
   std::string error_message = "Unknown error";
 
   update_checker = new UpdateCheckerBase();
-  const auto& currentVersion = update_checker->GetCurrentVersion(self_dll);
+  const auto& currentVersion =
+      update_checker->GetCurrentVersion(globals::self_dll);
 
   try {
-    audio_player = new AudioPlayer();
-    audio_player->Init("", "");
-    squad_tracker = new SquadTracker(audio_player);
+    Settings::instance().load();
+    AudioPlayer::instance().Init(
+        Settings::instance().settings.ready_check_path.value_or(""),
+        Settings::instance().settings.squad_ready_path.value_or(""));
+    squad_tracker = new SquadTracker();
   } catch (const std::exception& e) {
     loading_successful = false;
     error_message = "Error loading: ";
@@ -81,12 +167,12 @@ arcdps_exports* mod_init() {
   }
 
   memset(&arc_exports, 0, sizeof(arcdps_exports));
-  arc_exports.imguivers = 18000;
+  arc_exports.imguivers = IMGUI_VERSION_NUM;
   arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
   const std::string& version =
-      currentVersion ? update_checker->GetVersionAsString(
-                           currentVersion.value())
-                     : "Unknown";
+      currentVersion
+          ? update_checker->GetVersionAsString(currentVersion.value())
+          : "Unknown";
   char* version_c_str = new char[version.length() + 1];
   strcpy_s(version_c_str, version.length() + 1, version.c_str());
   arc_exports.out_build = version_c_str;
@@ -94,12 +180,16 @@ arcdps_exports* mod_init() {
   if (loading_successful) {
     arc_exports.sig = 0xBCAB9171;
     arc_exports.size = sizeof(arcdps_exports);
-
+    arc_exports.wnd_nofilter = mod_wnd;
+    arc_exports.imgui = mod_imgui;
+    arc_exports.options_end = mod_options;
+    arc_exports.options_windows = mod_windows;
   } else {
     init_failed = true;
     arc_exports.sig = 0;
     const std::string::size_type size = error_message.size();
-    char* buffer = new char[error_message.length() + 1];  // we need extra char for NUL
+    char* buffer =
+        new char[error_message.length() + 1];  // we need extra char for NUL
     memcpy(buffer, error_message.c_str(), size + 1);
     arc_exports.size = (uintptr_t)buffer;
   }
@@ -111,17 +201,26 @@ arcdps_exports* mod_init() {
 /* release mod -- return ignored */
 uintptr_t mod_release() {
   FreeConsole();
+
+  Settings::instance().unload();
+
+  g_singletonManagerInstance.Shutdown();
+
   return 0;
 }
 
 /* export -- arcdps looks for this exported function and calls the address it
  * returns on client load */
 extern "C" __declspec(dllexport) void* get_init_addr(
-    char* arcversion, void* imguictx, void* id3dptr, HMODULE arcdll,
+    char* arcversion, ImGuiContext* imguicontext, void* id3dptr, HMODULE arcdll,
     void* mallocfn, void* freefn, uint32_t d3dversion) {
   // id3dptr is IDirect3D9* if d3dversion==9, or IDXGISwapChain* if
   // d3dversion==11
   arcvers = arcversion;
+  ImGui::SetCurrentContext(imguicontext);
+  ImGui::SetAllocatorFunctions((void* (*)(size_t, void*))mallocfn,
+                               (void (*)(void*, void*))freefn);
+
   ARC_EXPORT_E6 = (arc_export_func_u64)GetProcAddress(arcdll, "e6");
   ARC_EXPORT_E7 = (arc_export_func_u64)GetProcAddress(arcdll, "e7");
   ARC_LOG_FILE = (e3_func_ptr)GetProcAddress(arcdll, "e3");
@@ -163,7 +262,7 @@ void squad_update_callback(const UserInfo* updatedUsers,
 
 extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
     const ExtrasAddonInfo* pExtrasInfo, void* pSubscriberInfo) {
-  extrasLoaded = true;
+  globals::unofficial_extras_loaded = true;
 
   // do not subscribe, if initialization called from arcdps failed.
   if (init_failed) {
@@ -177,7 +276,7 @@ extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
     ExtrasSubscriberInfo* extrasSubscriberInfo =
         static_cast<ExtrasSubscriberInfo*>(pSubscriberInfo);
 
-    UpdateSelfUser(pExtrasInfo->SelfAccountName);
+    globals::UpdateSelfUser(pExtrasInfo->SelfAccountName);
 
     extrasSubscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
     extrasSubscriberInfo->SquadUpdateCallback = squad_update_callback;
@@ -187,7 +286,7 @@ extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
     ExtrasSubscriberInfoV1* subscriberInfo =
         static_cast<ExtrasSubscriberInfoV1*>(pSubscriberInfo);
 
-    UpdateSelfUser(pExtrasInfo->SelfAccountName);
+    globals::UpdateSelfUser(pExtrasInfo->SelfAccountName);
 
     subscriberInfo->InfoVersion = 1;
     subscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;

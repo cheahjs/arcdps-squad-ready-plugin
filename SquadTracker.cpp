@@ -45,7 +45,7 @@ void SquadTracker::UpdateUsers(const UserInfo* updatedUsers,
     }
     // User removed
     else {
-      if (userAccountName == self_account_name) {
+      if (userAccountName == globals::self_account_name) {
         // Self left squad, reset cache
         cached_players.clear();
       } else {
@@ -59,12 +59,12 @@ void SquadTracker::UpdateUsers(const UserInfo* updatedUsers,
 void SquadTracker::ReadyCheckStarted() {
   logging::Debug("ready check has started");
   in_ready_check = true;
-  audio_player->PlayReadyCheck();
+  AudioPlayer::instance().PlayReadyCheck();
 }
 
 void SquadTracker::ReadyCheckCompleted() {
   logging::Debug("squad is ready");
-  audio_player->PlaySquadReady();
+  AudioPlayer::instance().PlaySquadReady();
 }
 
 void SquadTracker::ReadyCheckEnded() {

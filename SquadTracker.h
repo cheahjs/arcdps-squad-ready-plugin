@@ -3,10 +3,10 @@
 #include <map>
 #include <mutex>
 
+#include "Audio.h"
 #include "Globals.h"
 #include "Logging.h"
-#include "Audio.h"
-#include "arcdps_unofficial_extras_releases/Definitions.h"
+#include "unofficial_extras/Definitions.h"
 
 class SquadTracker {
  private:
@@ -16,8 +16,7 @@ class SquadTracker {
   bool in_ready_check;
 
  public:
-  SquadTracker(AudioPlayer* audio_player)
-      : audio_player(audio_player), in_ready_check(false) {}
+  SquadTracker() : in_ready_check(false) {}
   void UpdateUsers(const UserInfo* updatedUsers, size_t updatedUsersCount);
 
  private:

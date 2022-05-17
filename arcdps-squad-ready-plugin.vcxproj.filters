@@ -13,20 +13,29 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\deps">
-      <UniqueIdentifier>{a279fed8-2c2a-4bfe-af00-55c4bf484e34}</UniqueIdentifier>
+    <Filter Include="Header Files\unofficial_extras">
+      <UniqueIdentifier>{5b20abde-9b32-47d4-a2fa-e553961eccd7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\deps">
-      <UniqueIdentifier>{97438306-3a43-407a-bf76-fd8903993fee}</UniqueIdentifier>
+    <Filter Include="Source Files\unofficial_extras">
+      <UniqueIdentifier>{1b1134ff-c6cd-473c-a030-9aa9c61bd93e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\deps\arcdps-extension">
-      <UniqueIdentifier>{7b4d748e-b797-4276-a0e5-7492ef6c4a25}</UniqueIdentifier>
+    <Filter Include="Header Files\extension">
+      <UniqueIdentifier>{1e3d398c-f7e6-43f5-9987-d3b6ceb36cca}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\deps\arcdps-extension">
-      <UniqueIdentifier>{3fa50506-8e1a-4da0-961b-dc1909b98e88}</UniqueIdentifier>
+    <Filter Include="Header Files\extension\Windows">
+      <UniqueIdentifier>{1970a821-38aa-4405-b7ce-29e3fa321509}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\deps\unofficial_extras">
-      <UniqueIdentifier>{836b8178-11d8-47f0-a79f-0a5cfb57095e}</UniqueIdentifier>
+    <Filter Include="Source Files\extension">
+      <UniqueIdentifier>{0df14907-1bb5-4bca-9bd4-09c62efc99b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extension\Windows">
+      <UniqueIdentifier>{bdf4d5e8-aaec-4c1a-8d6c-4b583f7e5ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{28cd377a-b7fe-45a3-a51e-95ae99919f60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{9d302b94-ad13-454d-92ed-9171caf02df0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,20 +48,101 @@
     <ClInclude Include="SquadTracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="arcdps-extension\UpdateCheckerBase.h">
-      <Filter>Header Files\deps\arcdps-extension</Filter>
+    <ClInclude Include="Audio.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="arcdps-extension\arcdps_structs.h">
-      <Filter>Header Files\deps\arcdps-extension</Filter>
+    <ClInclude Include="unofficial_extras\KeyBindsTranslation.h">
+      <Filter>Header Files\unofficial_extras</Filter>
     </ClInclude>
-    <ClInclude Include="arcdps_unofficial_extras_releases\Definitions.h">
-      <Filter>Header Files\deps\unofficial_extras</Filter>
+    <ClInclude Include="unofficial_extras\KeyBindStructs.h">
+      <Filter>Header Files\unofficial_extras</Filter>
+    </ClInclude>
+    <ClInclude Include="unofficial_extras\Definitions.h">
+      <Filter>Header Files\unofficial_extras</Filter>
+    </ClInclude>
+    <ClInclude Include="unofficial_extras\KeyBindHelper.h">
+      <Filter>Header Files\unofficial_extras</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\ImGui_Math.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\imgui_stdlib.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\KeyBindHandler.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\KeyInput.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\map.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\MumbleLink.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\nlohmannJsonExtension.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Singleton.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\UpdateCheckerBase.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Widgets.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\arcdps_structs.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\arcdps_structs_slim.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Icon.h">
+      <Filter>Header Files\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Windows\MainWindow.h">
+      <Filter>Header Files\extension\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Windows\PositioningComponent.h">
+      <Filter>Header Files\extension\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Windows\ComponentBase.h">
+      <Filter>Header Files\extension\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Windows\KeyBindComponent.h">
+      <Filter>Header Files\extension\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="extension\Windows\MainTable.h">
+      <Filter>Header Files\extension\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -71,8 +161,65 @@
     <ClCompile Include="Globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="arcdps-extension\UpdateCheckerBase.cpp">
-      <Filter>Source Files\deps\arcdps-extension</Filter>
+    <ClCompile Include="unofficial_extras\KeyBindsTranslation.cpp">
+      <Filter>Source Files\unofficial_extras</Filter>
+    </ClCompile>
+    <ClCompile Include="unofficial_extras\KeyBindHelper.cpp">
+      <Filter>Source Files\unofficial_extras</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\Widgets.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\arcdps_structs.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\Icon.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\imgui_stdlib.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\KeyBindHandler.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\KeyInput.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\Singleton.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\UpdateCheckerBase.cpp">
+      <Filter>Source Files\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\Windows\MainWindow.cpp">
+      <Filter>Source Files\extension\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\Windows\PositioningComponent.cpp">
+      <Filter>Source Files\extension\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="extension\Windows\KeyBindComponent.cpp">
+      <Filter>Source Files\extension\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

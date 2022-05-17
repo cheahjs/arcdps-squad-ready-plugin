@@ -1,7 +1,7 @@
 #include "Audio.h"
 
 bool AudioPlayer::Init(std::string ready_check_path,
-                         std::string squad_ready_path) {
+                       std::string squad_ready_path) {
   bool success = true;
   if (!UpdateReadyCheck(ready_check_path)) {
     logging::Squad(std::format("Failed to load ready check audio from {}",
@@ -20,7 +20,8 @@ bool AudioPlayer::UpdateReadyCheck(std::string path) {
   bool success = false;
   if (path.empty()) {
     logging::Debug("loading default ready check");
-    ready_check_sound = std::make_unique<WaveFile>(MAKEINTRESOURCE(READY_CHECK));
+    ready_check_sound =
+        std::make_unique<WaveFile>(MAKEINTRESOURCE(READY_CHECK));
   } else {
     ready_check_sound = std::make_unique<WaveFile>(path);
   }
@@ -89,13 +90,13 @@ WaveFile::WaveFile(LPWSTR resource) {
   valid = false;
   buffer = nullptr;
 
-  auto resource_info = FindResource(self_dll, resource, TEXT("WAVE"));
+  auto resource_info = FindResource(globals::self_dll, resource, TEXT("WAVE"));
   if (resource_info == NULL) return;
 
-  auto loaded_resource = LoadResource(self_dll, resource_info);
+  auto loaded_resource = LoadResource(globals::self_dll, resource_info);
   if (loaded_resource == NULL) return;
 
-  auto resource_size = SizeofResource(self_dll, resource_info);
+  auto resource_size = SizeofResource(globals::self_dll, resource_info);
   if (resource_size == 0) return;
 
   auto resource_pointer = LockResource(loaded_resource);

@@ -1,8 +1,8 @@
 [submodule "arcdps_unofficial_extras_releases"]
-	path = arcdps_unofficial_extras_releases
+	path = unofficial_extras
 	url = https://github.com/Krappa322/arcdps_unofficial_extras_releases
 [submodule "arcdps-extension"]
-	path = arcdps-extension
+	path = extension
 	url = https://github.com/knoxfighter/arcdps-extension
 [submodule "imgui"]
 	path = imgui

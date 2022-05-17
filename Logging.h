@@ -3,7 +3,7 @@
 #include <format>
 #include <string>
 
-#include "arcdps-extension/arcdps_structs.h"
+#include "extension/arcdps_structs.h"
 
 namespace logging {
 /* log to arcdps.log, thread/async safe */
