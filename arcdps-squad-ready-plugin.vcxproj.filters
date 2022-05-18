@@ -37,6 +37,24 @@
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{9d302b94-ad13-454d-92ed-9171caf02df0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\miniaudio">
+      <UniqueIdentifier>{068d1abf-d742-435b-a11f-ca1614b1197f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\miniaudio\extras">
+      <UniqueIdentifier>{a2dac974-5ed3-41b9-9c16-2f0c104613d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\miniaudio\extras\miniaudio_split">
+      <UniqueIdentifier>{3b6133a2-38fa-4126-b085-a6419e700e5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\miniaudio">
+      <UniqueIdentifier>{326d5368-c1b6-45b4-b65f-74137be1cfc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\miniaudio\extras">
+      <UniqueIdentifier>{d5d61bcc-7c68-4d99-9dc7-6a2e5053b778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\miniaudio\extras\miniaudio_split">
+      <UniqueIdentifier>{656e94f5-d5a6-488d-ae36-714b17af1b9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logging.h">
@@ -144,6 +162,9 @@
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="miniaudio\extras\miniaudio_split\miniaudio.h">
+      <Filter>Header Files\miniaudio\extras\miniaudio_split</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -220,6 +241,9 @@
     </ClCompile>
     <ClCompile Include="Settings.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="miniaudio\extras\miniaudio_split\miniaudio.c">
+      <Filter>Source Files\miniaudio\extras\miniaudio_split</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

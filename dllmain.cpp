@@ -22,8 +22,6 @@
 #include "imgui/imgui.h"
 #include "unofficial_extras/Definitions.h"
 
-#pragma comment(lib, "winmm.lib")
-
 const char* SQUAD_READY_PLUGIN_NAME = "squad_ready";
 
 /* proto/globals */
@@ -158,7 +156,9 @@ arcdps_exports* mod_init() {
     Settings::instance().load();
     AudioPlayer::instance().Init(
         Settings::instance().settings.ready_check_path.value_or(""),
-        Settings::instance().settings.squad_ready_path.value_or(""));
+        Settings::instance().settings.ready_check_volume,
+        Settings::instance().settings.squad_ready_path.value_or(""),
+        Settings::instance().settings.squad_ready_volume);
     squad_tracker = new SquadTracker();
   } catch (const std::exception& e) {
     loading_successful = false;
@@ -292,5 +292,5 @@ extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
     subscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
     subscriberInfo->SquadUpdateCallback = squad_update_callback;
   }
-  logging::Squad("done arcdps_unofficial_extras_subscriber_init");
+  logging::Debug("done arcdps_unofficial_extras_subscriber_init");
 }

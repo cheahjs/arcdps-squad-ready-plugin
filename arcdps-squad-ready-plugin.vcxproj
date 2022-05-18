@@ -201,6 +201,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="Logging.h" />
+    <ClInclude Include="miniaudio\extras\miniaudio_split\miniaudio.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsUI.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Logging.cpp" />
+    <ClCompile Include="miniaudio\extras\miniaudio_split\miniaudio.c" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SettingsUI.cpp" />
     <ClCompile Include="SquadTracker.cpp" />
