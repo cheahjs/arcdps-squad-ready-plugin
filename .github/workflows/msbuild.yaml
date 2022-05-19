@@ -1,6 +1,9 @@
 name: MSBuild
 
-on: push
+on: 
+  push:
+  release:
+    types: [created]
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -32,17 +35,30 @@ jobs:
     - name: Setup vcpkg
       run: |
         ${{ github.workspace }}/vcpkg/vcpkg.exe integrate install
-        
-    - name: Update version
-      shell: pwsh
+
+    - name: Get CI version
+      if: github.event_name != 'release'
+      id: ci-version
+      shell: bash
       run: |
-        $file = "./arcdps-squad-ready-plugin.rc"
-        $regex = '(.*(?:(?:FILEVERSION)|(?:FileVersion)|(?:PRODUCTVERSION)|(?:ProductVersion)).*?(?:\d*[.,]){3})(\d*)(.*)'
-        $tmp = Get-Content $file | Foreach {
-          [regex]::replace($_, $regex, 
-            {param($m) $m.Groups[1].Value + ([int]${{github.run_number}}) + $m.Groups[3].Value})
-        }
-        $tmp | Set-Content $file
+        echo ::set-output name=TAG::$(git describe --tags --no-abbrev)
+        
+    - name: Update CI version
+      if: github.event_name != 'release'
+      run: python workflow/stamp-version.py "${{steps.ci-version.outputs.TAG}}" "${{github.run_number}}" "${{github.sha}}"
+
+    - name: Get release version
+      if: github.event_name == 'release'
+      id: release-version
+      shell: bash
+      run: |
+        sanitised_tag=${GITHUB_REF/refs\/tags\//}
+        echo ::set-output name=TAG::${sanitised_tag//./,}
+
+    - name: Update release version
+      if: github.event_name == 'release'
+      run: python workflow/stamp-version.py "${{steps.release-version.outputs.TAG}}" "${{github.run_number}}" "${{github.sha}}"
+    
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
@@ -56,3 +72,9 @@ jobs:
         path: |
           x64/${{ env.BUILD_CONFIGURATION }}/d3d9_arcdps_squad_ready.dll
           x64/${{ env.BUILD_CONFIGURATION }}/d3d9_arcdps_squad_ready.pdb
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: x64/${{ env.BUILD_CONFIGURATION }}/d3d9_arcdps_squad_ready.dll
