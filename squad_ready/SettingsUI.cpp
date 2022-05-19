@@ -1,17 +1,14 @@
 #include "SettingsUI.h"
 
-#include <Windows.h>
-
 #include <string>
 
 #include "Audio.h"
 #include "Globals.h"
 #include "Settings.h"
-#include "../modules/extension/KeyBindHandler.h"
-#include "../modules/extension/KeyInput.h"
-#include "../modules/extension/Widgets.h"
-#include "../modules/extension/imgui_stdlib.h"
-#include "../modules/imgui/imgui.h"
+#include "extension/KeyInput.h"
+#include "extension/Widgets.h"
+#include "extension/imgui_stdlib.h"
+#include "imgui/imgui.h"
 
 SettingsUI settingsUI;
 

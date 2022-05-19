@@ -6,7 +6,7 @@
 	url = https://github.com/knoxfighter/arcdps-extension
 [submodule "imgui"]
 	path = modules/imgui
-	url = https://github.com/ocornut/imgui
+	url = https://github.com/knoxfighter/imgui
 [submodule "miniaudio"]
 	path = modules/miniaudio
 	url = https://github.com/mackron/miniaudio

@@ -4,9 +4,6 @@
 
 #include <string>
 
-#include "../modules/extension/arcdps_structs.h"
-#include "../modules/imgui/imgui.h"
-
 namespace globals {
 
 extern std::string self_account_name;

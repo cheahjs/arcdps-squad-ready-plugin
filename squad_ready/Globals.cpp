@@ -1,5 +1,8 @@
 #include "Globals.h"
 
+#include "extension/arcdps_structs.h"
+#include "imgui/imgui.h"
+
 namespace globals {
 
 std::string self_account_name;

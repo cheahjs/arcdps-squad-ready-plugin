@@ -1,5 +1,11 @@
 #include "Audio.h"
 
+#include <fstream>
+#include <iostream>
+
+#include "Globals.h"
+#include "resource.h"
+
 AudioPlayer::~AudioPlayer() {
   ready_check_sound.reset();
   squad_ready_sound.reset();
@@ -150,8 +156,9 @@ WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
     return;
   }
 
-  if (ma_sound_init_from_data_source(engine, decoder.get(), MA_SOUND_FLAG_DECODE,
-                                     NULL, sound.get()) != MA_SUCCESS) {
+  if (ma_sound_init_from_data_source(engine, decoder.get(),
+                                     MA_SOUND_FLAG_DECODE, NULL,
+                                     sound.get()) != MA_SUCCESS) {
     return;
   }
 

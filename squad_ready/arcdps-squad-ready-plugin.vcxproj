@@ -142,6 +142,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,6 +164,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -175,64 +177,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Audio.h" />
-    <ClInclude Include="..\modules\extension\arcdps_structs.h" />
-    <ClInclude Include="..\modules\extension\arcdps_structs_slim.h" />
-    <ClInclude Include="..\modules\extension\Icon.h" />
-    <ClInclude Include="..\modules\extension\ImGui_Math.h" />
-    <ClInclude Include="..\modules\extension\imgui_stdlib.h" />
-    <ClInclude Include="..\modules\extension\KeyBindHandler.h" />
-    <ClInclude Include="..\modules\extension\KeyInput.h" />
-    <ClInclude Include="..\modules\extension\map.h" />
-    <ClInclude Include="..\modules\extension\MumbleLink.h" />
-    <ClInclude Include="..\modules\extension\nlohmannJsonExtension.h" />
-    <ClInclude Include="..\modules\extension\Singleton.h" />
-    <ClInclude Include="..\modules\extension\UpdateCheckerBase.h" />
-    <ClInclude Include="..\modules\extension\Widgets.h" />
-    <ClInclude Include="..\modules\extension\Windows\ComponentBase.h" />
-    <ClInclude Include="..\modules\extension\Windows\KeyBindComponent.h" />
-    <ClInclude Include="..\modules\extension\Windows\MainTable.h" />
-    <ClInclude Include="..\modules\extension\Windows\MainWindow.h" />
-    <ClInclude Include="..\modules\extension\Windows\PositioningComponent.h" />
     <ClInclude Include="Globals.h" />
-    <ClInclude Include="..\modules\imgui\imconfig.h" />
-    <ClInclude Include="..\modules\imgui\imgui.h" />
-    <ClInclude Include="..\modules\imgui\imgui_internal.h" />
-    <ClInclude Include="..\modules\imgui\imstb_rectpack.h" />
-    <ClInclude Include="..\modules\imgui\imstb_textedit.h" />
-    <ClInclude Include="..\modules\imgui\imstb_truetype.h" />
     <ClInclude Include="Logging.h" />
     <ClInclude Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsUI.h" />
     <ClInclude Include="SquadTracker.h" />
-    <ClInclude Include="unofficial_extras\Definitions.h" />
-    <ClInclude Include="unofficial_extras\KeyBindHelper.h" />
-    <ClInclude Include="unofficial_extras\KeyBindsTranslation.h" />
-    <ClInclude Include="unofficial_extras\KeyBindStructs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\modules\unofficial_extras\KeyBindHelper.cpp" />
-    <ClCompile Include="..\modules\unofficial_extras\KeyBindsTranslation.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="..\modules\extension\arcdps_structs.cpp" />
-    <ClCompile Include="..\modules\extension\Icon.cpp" />
-    <ClCompile Include="..\modules\extension\imgui_stdlib.cpp" />
-    <ClCompile Include="..\modules\extension\KeyBindHandler.cpp" />
-    <ClCompile Include="..\modules\extension\KeyInput.cpp" />
-    <ClCompile Include="..\modules\extension\Singleton.cpp" />
-    <ClCompile Include="..\modules\extension\UpdateCheckerBase.cpp" />
-    <ClCompile Include="..\modules\extension\Widgets.cpp" />
-    <ClCompile Include="..\modules\extension\Windows\KeyBindComponent.cpp" />
-    <ClCompile Include="..\modules\extension\Windows\MainWindow.cpp" />
-    <ClCompile Include="..\modules\extension\Windows\PositioningComponent.cpp" />
     <ClCompile Include="Globals.cpp" />
-    <ClCompile Include="..\modules\imgui\imgui.cpp" />
-    <ClCompile Include="..\modules\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\modules\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\modules\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\modules\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.c" />
     <ClCompile Include="Settings.cpp" />
@@ -245,6 +201,17 @@
   <ItemGroup>
     <Media Include="sounds\ready_check.wav" />
     <Media Include="sounds\squad_ready.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\modules\extension\arcdps_extension.vcxproj">
+      <Project>{5aff3fc8-8e6f-4fda-9867-93bb861ab635}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\imgui\imgui.vcxproj">
+      <Project>{34ec5a9c-750c-4e6e-bc1a-3090ad360b7e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\unofficial_extras\unofficial_extras.vcxproj">
+      <Project>{dab9bae4-7c01-4d28-90fe-b49387e9fb24}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

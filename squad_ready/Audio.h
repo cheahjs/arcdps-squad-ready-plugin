@@ -2,15 +2,10 @@
 
 #include <Windows.h>
 
-#include <fstream>
-#include <iostream>
 #include <string>
-#include <vector>
 
-#include "Globals.h"
 #include "Logging.h"
-#include "../modules/extension/Singleton.h"
-#include "resource.h"
+#include "extension/Singleton.h"
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "../modules/miniaudio/extras/miniaudio_split/miniaudio.h"

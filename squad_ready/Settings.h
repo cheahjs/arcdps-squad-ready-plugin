@@ -2,11 +2,11 @@
 #include <map>
 #include <nlohmann/json.hpp>
 
-#include "../modules/extension/Singleton.h"
-#include "../modules/extension/arcdps_structs.h"
-#include "../modules/extension/nlohmannJsonExtension.h"
-#include "../modules/imgui/imgui.h"
-#include "../modules/unofficial_extras/Definitions.h"
+#include "extension/Singleton.h"
+#include "extension/arcdps_structs.h"
+#include "extension/nlohmannJsonExtension.h"
+#include "imgui/imgui.h"
+#include "unofficial_extras/Definitions.h"
 
 const std::string kSettingsJsonPath = "addons\\arcdps\\arcdps_squad_ready.json";
 
