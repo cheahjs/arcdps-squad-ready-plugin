@@ -69,14 +69,14 @@ jobs:
     - name: Archive files
       uses: actions/upload-artifact@v3
       with:
-        name: d3d9_arcdps_squad_ready
+        name: arcdps_squad_ready
         path: |
-          x64/${{ env.BUILD_CONFIGURATION }}/d3d9_arcdps_squad_ready.dll
-          x64/${{ env.BUILD_CONFIGURATION }}/d3d9_arcdps_squad_ready.pdb
+          x64/${{ env.BUILD_CONFIGURATION }}/arcdps_squad_ready.dll
+          x64/${{ env.BUILD_CONFIGURATION }}/arcdps_squad_ready.pdb
 
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
-        files: x64/${{ env.BUILD_CONFIGURATION }}/d3d9_arcdps_squad_ready.dll
+        files: x64/${{ env.BUILD_CONFIGURATION }}/arcdps_squad_ready.dll
