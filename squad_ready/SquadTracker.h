@@ -6,7 +6,7 @@
 #include "Audio.h"
 #include "Globals.h"
 #include "Logging.h"
-#include "unofficial_extras/Definitions.h"
+#include "../modules/unofficial_extras/Definitions.h"
 
 class SquadTracker {
  private:

@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "extension/arcdps_structs.h"
-#include "imgui/imgui.h"
+#include "../modules/extension/arcdps_structs.h"
+#include "../modules/imgui/imgui.h"
 
 namespace globals {
 

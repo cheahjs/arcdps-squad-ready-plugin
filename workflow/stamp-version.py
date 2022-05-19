@@ -17,11 +17,12 @@ def main():
 
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     new_file = ''
-    with open(os.path.join(__location__, '..', 'arcdps-squad-ready-plugin.rc'), 'r') as f:
+    rc_path = os.path.join(__location__, '..', 'squad_ready', 'arcdps-squad-ready-plugin.rc')
+    with open(rc_path, 'r') as f:
         new_file = f.read()
     new_file = re.sub(r'(.*(?:(?:FILEVERSION)|(?:PRODUCTVERSION))).*', f'\\1 {binary_version}', new_file)
     new_file = re.sub(r'(.*(?:(?:FileVersion)|(?:ProductVersion))").*', f'\\1, "{string_version}"', new_file)
-    with open(os.path.join(__location__, '..', 'arcdps-squad-ready-plugin.rc'), 'w') as f:
+    with open(rc_path, 'w') as f:
         f.write(new_file)
 
 

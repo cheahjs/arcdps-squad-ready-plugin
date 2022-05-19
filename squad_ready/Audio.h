@@ -9,11 +9,11 @@
 
 #include "Globals.h"
 #include "Logging.h"
-#include "extension/Singleton.h"
+#include "../modules/extension/Singleton.h"
 #include "resource.h"
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio/extras/miniaudio_split/miniaudio.h"
+#include "../modules/miniaudio/extras/miniaudio_split/miniaudio.h"
 
 class WaveFile {
  public:

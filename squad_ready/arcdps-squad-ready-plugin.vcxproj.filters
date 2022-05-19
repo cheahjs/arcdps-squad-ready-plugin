@@ -84,76 +84,76 @@
     <ClInclude Include="unofficial_extras\KeyBindHelper.h">
       <Filter>Header Files\unofficial_extras</Filter>
     </ClInclude>
-    <ClInclude Include="extension\ImGui_Math.h">
+    <ClInclude Include="..\modules\extension\ImGui_Math.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\imgui_stdlib.h">
+    <ClInclude Include="..\modules\extension\imgui_stdlib.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\KeyBindHandler.h">
+    <ClInclude Include="..\modules\extension\KeyBindHandler.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\KeyInput.h">
+    <ClInclude Include="..\modules\extension\KeyInput.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\map.h">
+    <ClInclude Include="..\modules\extension\map.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\MumbleLink.h">
+    <ClInclude Include="..\modules\extension\MumbleLink.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\nlohmannJsonExtension.h">
+    <ClInclude Include="..\modules\extension\nlohmannJsonExtension.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Singleton.h">
+    <ClInclude Include="..\modules\extension\Singleton.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\UpdateCheckerBase.h">
+    <ClInclude Include="..\modules\extension\UpdateCheckerBase.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Widgets.h">
+    <ClInclude Include="..\modules\extension\Widgets.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\arcdps_structs.h">
+    <ClInclude Include="..\modules\extension\arcdps_structs.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\arcdps_structs_slim.h">
+    <ClInclude Include="..\modules\extension\arcdps_structs_slim.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Icon.h">
+    <ClInclude Include="..\modules\extension\Icon.h">
       <Filter>Header Files\extension</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Windows\MainWindow.h">
+    <ClInclude Include="..\modules\extension\Windows\MainWindow.h">
       <Filter>Header Files\extension\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Windows\PositioningComponent.h">
+    <ClInclude Include="..\modules\extension\Windows\PositioningComponent.h">
       <Filter>Header Files\extension\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Windows\ComponentBase.h">
+    <ClInclude Include="..\modules\extension\Windows\ComponentBase.h">
       <Filter>Header Files\extension\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Windows\KeyBindComponent.h">
+    <ClInclude Include="..\modules\extension\Windows\KeyBindComponent.h">
       <Filter>Header Files\extension\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="extension\Windows\MainTable.h">
+    <ClInclude Include="..\modules\extension\Windows\MainTable.h">
       <Filter>Header Files\extension\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui.h">
+    <ClInclude Include="..\modules\imgui\imgui.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
+    <ClInclude Include="..\modules\imgui\imgui_internal.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imstb_rectpack.h">
+    <ClInclude Include="..\modules\imgui\imstb_rectpack.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imstb_textedit.h">
+    <ClInclude Include="..\modules\imgui\imstb_textedit.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imstb_truetype.h">
+    <ClInclude Include="..\modules\imgui\imstb_truetype.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imconfig.h">
+    <ClInclude Include="..\modules\imgui\imconfig.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="SettingsUI.h">
@@ -162,7 +162,7 @@
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="miniaudio\extras\miniaudio_split\miniaudio.h">
+    <ClInclude Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.h">
       <Filter>Header Files\miniaudio\extras\miniaudio_split</Filter>
     </ClInclude>
   </ItemGroup>
@@ -182,58 +182,52 @@
     <ClCompile Include="Globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unofficial_extras\KeyBindsTranslation.cpp">
-      <Filter>Source Files\unofficial_extras</Filter>
-    </ClCompile>
-    <ClCompile Include="unofficial_extras\KeyBindHelper.cpp">
-      <Filter>Source Files\unofficial_extras</Filter>
-    </ClCompile>
-    <ClCompile Include="extension\Widgets.cpp">
+    <ClCompile Include="..\modules\extension\Widgets.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\arcdps_structs.cpp">
+    <ClCompile Include="..\modules\extension\arcdps_structs.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\Icon.cpp">
+    <ClCompile Include="..\modules\extension\Icon.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\imgui_stdlib.cpp">
+    <ClCompile Include="..\modules\extension\imgui_stdlib.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\KeyBindHandler.cpp">
+    <ClCompile Include="..\modules\extension\KeyBindHandler.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\KeyInput.cpp">
+    <ClCompile Include="..\modules\extension\KeyInput.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\Singleton.cpp">
+    <ClCompile Include="..\modules\extension\Singleton.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\UpdateCheckerBase.cpp">
+    <ClCompile Include="..\modules\extension\UpdateCheckerBase.cpp">
       <Filter>Source Files\extension</Filter>
     </ClCompile>
-    <ClCompile Include="extension\Windows\MainWindow.cpp">
+    <ClCompile Include="..\modules\extension\Windows\MainWindow.cpp">
       <Filter>Source Files\extension\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="extension\Windows\PositioningComponent.cpp">
+    <ClCompile Include="..\modules\extension\Windows\PositioningComponent.cpp">
       <Filter>Source Files\extension\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="extension\Windows\KeyBindComponent.cpp">
+    <ClCompile Include="..\modules\extension\Windows\KeyBindComponent.cpp">
       <Filter>Source Files\extension\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
+    <ClCompile Include="..\modules\imgui\imgui.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_demo.cpp">
+    <ClCompile Include="..\modules\imgui\imgui_demo.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
+    <ClCompile Include="..\modules\imgui\imgui_draw.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
+    <ClCompile Include="..\modules\imgui\imgui_tables.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
+    <ClCompile Include="..\modules\imgui\imgui_widgets.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
     <ClCompile Include="SettingsUI.cpp">
@@ -242,8 +236,14 @@
     <ClCompile Include="Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="miniaudio\extras\miniaudio_split\miniaudio.c">
+    <ClCompile Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.c">
       <Filter>Source Files\miniaudio\extras\miniaudio_split</Filter>
+    </ClCompile>
+    <ClCompile Include="..\modules\unofficial_extras\KeyBindHelper.cpp">
+      <Filter>Source Files\unofficial_extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\modules\unofficial_extras\KeyBindsTranslation.cpp">
+      <Filter>Source Files\unofficial_extras</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

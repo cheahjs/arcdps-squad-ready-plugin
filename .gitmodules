@@ -1,12 +1,12 @@
 [submodule "arcdps_unofficial_extras_releases"]
-	path = unofficial_extras
+	path = modules/unofficial_extras
 	url = https://github.com/Krappa322/arcdps_unofficial_extras_releases
 [submodule "arcdps-extension"]
-	path = extension
+	path = modules/extension
 	url = https://github.com/knoxfighter/arcdps-extension
 [submodule "imgui"]
-	path = imgui
+	path = modules/imgui
 	url = https://github.com/ocornut/imgui
 [submodule "miniaudio"]
-	path = miniaudio
+	path = modules/miniaudio
 	url = https://github.com/mackron/miniaudio
