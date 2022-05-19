@@ -7,7 +7,7 @@ import re
 def main():
     if len(sys.argv) < 4:
         print("Usage: stamp-version.py <tag> <run_id> <git_hash>")
-        return
+        exit(1)
     version = sys.argv[1]
     run_id = sys.argv[2]
     git_hash = sys.argv[3]
