@@ -8,7 +8,7 @@
 #include "extension/Singleton.h"
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "../modules/miniaudio/extras/miniaudio_split/miniaudio.h"
+#include "miniaudio/extras/miniaudio_split/miniaudio.h"
 
 class WaveFile {
  public:
