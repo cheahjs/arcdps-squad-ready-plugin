@@ -28,7 +28,7 @@ const char* SQUAD_READY_RELEASE_URL =
 /* proto/globals */
 arcdps_exports arc_exports = {};
 char* arcvers;
-SquadTracker* squad_tracker;
+std::unique_ptr<SquadTracker> squad_tracker;
 
 /* arcdps exports */
 arc_export_func_u64 ARC_EXPORT_E6;
@@ -171,7 +171,7 @@ arcdps_exports* mod_init() {
         Settings::instance().settings.ready_check_volume,
         Settings::instance().settings.squad_ready_path.value_or(""),
         Settings::instance().settings.squad_ready_volume);
-    squad_tracker = new SquadTracker();
+    squad_tracker = std::make_unique<SquadTracker>();
   } catch (const std::exception& e) {
     loading_successful = false;
     error_message = "Error loading: ";
