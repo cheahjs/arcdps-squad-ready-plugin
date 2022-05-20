@@ -9,6 +9,9 @@ std::string self_account_name;
 HMODULE self_dll;
 bool unofficial_extras_loaded;
 
+// updates
+std::unique_ptr<UpdateCheckerBase::UpdateState> UPDATE_STATE = nullptr;
+
 // arc keyboard modifier
 DWORD ARC_GLOBAL_MOD1 = 0;
 DWORD ARC_GLOBAL_MOD2 = 0;

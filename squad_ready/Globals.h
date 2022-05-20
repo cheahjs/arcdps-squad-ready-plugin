@@ -4,6 +4,9 @@
 
 #include <string>
 
+#include "extension/UpdateChecker.h"
+#include "extension/UpdateCheckerBase.h"
+
 namespace globals {
 
 extern std::string self_account_name;
@@ -11,9 +14,7 @@ extern HMODULE self_dll;
 extern bool unofficial_extras_loaded;
 
 // Updating myself stuff
-// extern std::unique_ptr<UpdateChecker> UPDATE_CHECKER = nullptr;
-// extern std::unique_ptr<UpdateCheckerBase::UpdateState> UPDATE_STATE =
-//    nullptr;
+extern std::unique_ptr<UpdateCheckerBase::UpdateState> UPDATE_STATE;
 
 // arc keyboard modifier
 extern DWORD ARC_GLOBAL_MOD1;

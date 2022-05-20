@@ -21,13 +21,14 @@
 #include "imgui/imgui.h"
 #include "unofficial_extras/Definitions.h"
 
-const char* SQUAD_READY_PLUGIN_NAME = "squad_ready";
+const char* SQUAD_READY_PLUGIN_NAME = "Squad Ready";
+const char* SQUAD_READY_RELEASE_URL =
+    "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest";
 
 /* proto/globals */
 arcdps_exports arc_exports = {};
 char* arcvers;
 SquadTracker* squad_tracker;
-UpdateCheckerBase* update_checker;
 
 /* arcdps exports */
 arc_export_func_u64 ARC_EXPORT_E6;
@@ -137,9 +138,13 @@ uintptr_t mod_windows(const char* windowname) {
   return 0;
 }
 
-bool lastFrameShow = false;
+uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
+  UpdateChecker::instance().Draw(
+      globals::UPDATE_STATE, SQUAD_READY_PLUGIN_NAME,
+      "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest");
 
-uintptr_t mod_imgui(uint32_t not_charsel_or_loading) { return 0; }
+  return 0;
+}
 
 /* initialize mod -- return table that arcdps will use for callbacks. exports
  * struct and strings are copied to arcdps memory only once at init */
@@ -147,11 +152,19 @@ arcdps_exports* mod_init() {
   bool loading_successful = true;
   std::string error_message = "Unknown error";
 
-  update_checker = new UpdateCheckerBase();
-  const auto& currentVersion =
-      update_checker->GetCurrentVersion(globals::self_dll);
+  const auto& current_version =
+      UpdateChecker::instance().GetCurrentVersion(globals::self_dll);
 
   try {
+    UpdateChecker::instance().ClearFiles(globals::self_dll);
+
+    if (current_version) {
+      globals::UPDATE_STATE =
+          std::move(UpdateChecker::instance().CheckForUpdate(
+              globals::self_dll, current_version.value(),
+              "cheahjs/arcdps-squad-ready-plugin", false));
+    }
+
     Settings::instance().load();
     AudioPlayer::instance().Init(
         Settings::instance().settings.ready_check_path.value_or(""),
@@ -169,9 +182,9 @@ arcdps_exports* mod_init() {
   arc_exports.imguivers = IMGUI_VERSION_NUM;
   arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
   const std::string& version =
-      currentVersion
-          ? update_checker->GetVersionAsString(currentVersion.value())
-          : "Unknown";
+      current_version ? UpdateChecker::instance().GetVersionAsString(
+                            current_version.value())
+                      : "Unknown";
   char* version_c_str = new char[version.length() + 1];
   strcpy_s(version_c_str, version.length() + 1, version.c_str());
   arc_exports.out_build = version_c_str;
@@ -200,6 +213,11 @@ arcdps_exports* mod_init() {
 /* release mod -- return ignored */
 uintptr_t mod_release() {
   FreeConsole();
+
+  if (globals::UPDATE_STATE) {
+    globals::UPDATE_STATE->FinishPendingTasks();
+    globals::UPDATE_STATE.reset(nullptr);
+  }
 
   Settings::instance().unload();
 
