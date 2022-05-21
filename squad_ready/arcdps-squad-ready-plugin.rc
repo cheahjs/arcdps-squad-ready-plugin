@@ -61,8 +61,8 @@ SQUAD_READY             WAVE                    "sounds\\squad_ready.wav"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,1,0
- PRODUCTVERSION 0,0,1,0
+ FILEVERSION 999,999,999,999
+ PRODUCTVERSION 999,999,999,999
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x3L
@@ -77,12 +77,12 @@ BEGIN
     BEGIN
         BLOCK "080904b0"
         BEGIN
-            VALUE "FileVersion", "0.0.1.0"
+            VALUE "FileVersion", "999.999.999.999-dev"
             VALUE "InternalName", "d3d9-arcdps-squad-ready.dll"
             VALUE "LegalCopyright", "Copyright (C) 2022"
             VALUE "OriginalFilename", "d3d9-arcdps-squad-ready.dll"
             VALUE "ProductName", "Squad Ready ArcDPS plugin"
-            VALUE "ProductVersion", "0.0.1.0"
+            VALUE "ProductVersion", "999.999.999.999-dev"
         END
     END
     BLOCK "VarFileInfo"
