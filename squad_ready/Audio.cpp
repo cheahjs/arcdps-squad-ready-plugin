@@ -1,25 +1,24 @@
 #include "Audio.h"
 
 #include <fstream>
-#include <iostream>
 
 #include "Globals.h"
 #include "resource.h"
 
 AudioPlayer::~AudioPlayer() {
-  ready_check_sound.reset();
-  squad_ready_sound.reset();
-  if (engine) {
-    ma_engine_uninit(engine.get());
+  ready_check_sound_.reset();
+  squad_ready_sound_.reset();
+  if (engine_) {
+    ma_engine_uninit(engine_.get());
   }
 }
 
-bool AudioPlayer::Init(std::string ready_check_path, int ready_check_volume,
-                       std::string squad_ready_path, int squad_ready_volume) {
+bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check_volume,
+                       const std::string squad_ready_path, const int squad_ready_volume) {
   bool success = true;
 
-  engine = std::make_unique<ma_engine>();
-  if (ma_engine_init(nullptr, engine.get()) != MA_SUCCESS) {
+  engine_ = std::make_unique<ma_engine>();
+  if (ma_engine_init(nullptr, engine_.get()) != MA_SUCCESS) {
     logging::Squad("Failed to initialize audio engine");
     return false;
   }
@@ -41,162 +40,161 @@ bool AudioPlayer::Init(std::string ready_check_path, int ready_check_volume,
   return success;
 }
 
-bool AudioPlayer::UpdateReadyCheck(std::string path) {
+bool AudioPlayer::UpdateReadyCheck(const std::string& path) {
   bool success = false;
   if (path.empty()) {
     logging::Debug("loading default ready check");
-    ready_check_sound =
-        std::make_unique<WaveFile>(MAKEINTRESOURCE(READY_CHECK), engine.get());
+    ready_check_sound_ =
+        std::make_unique<WaveFile>(MAKEINTRESOURCE(READY_CHECK), engine_.get());
   } else {
-    ready_check_sound = std::make_unique<WaveFile>(path, engine.get());
+    ready_check_sound_ = std::make_unique<WaveFile>(path, engine_.get());
   }
-  success = ready_check_sound->IsValid();
+  success = ready_check_sound_->IsValid();
   if (!success) {
     logging::Debug("failed to load ready check");
-    ready_check_status = "Failed to load";
+    ready_check_status_ = "Failed to load";
   } else {
-    ready_check_status = "";
+    ready_check_status_ = "";
   }
-  UpdateReadyCheckVolume(ready_check_volume);
+  UpdateReadyCheckVolume(ready_check_volume_);
   return success;
 }
 
-bool AudioPlayer::UpdateSquadReady(std::string path) {
+bool AudioPlayer::UpdateSquadReady(const std::string& path) {
   bool success = false;
   if (path.empty()) {
     logging::Debug("loading default squad ready");
-    squad_ready_sound =
-        std::make_unique<WaveFile>(MAKEINTRESOURCE(SQUAD_READY), engine.get());
+    squad_ready_sound_ =
+        std::make_unique<WaveFile>(MAKEINTRESOURCE(SQUAD_READY), engine_.get());
   } else {
-    squad_ready_sound = std::make_unique<WaveFile>(path, engine.get());
+    squad_ready_sound_ = std::make_unique<WaveFile>(path, engine_.get());
   }
-  success = squad_ready_sound->IsValid();
+  success = squad_ready_sound_->IsValid();
   if (!success) {
     logging::Debug("failed to load squad ready");
-    squad_ready_status = "Failed to load";
+    squad_ready_status_ = "Failed to load";
   } else {
-    squad_ready_status = "";
+    squad_ready_status_ = "";
   }
-  UpdateSquadReadyVolume(squad_ready_volume);
+  UpdateSquadReadyVolume(squad_ready_volume_);
   return success;
 }
 
-void AudioPlayer::UpdateReadyCheckVolume(int volume) {
-  ready_check_volume = volume;
-  if (!ready_check_sound) return;
-  ready_check_sound->SetVolume(volume);
+void AudioPlayer::UpdateReadyCheckVolume(const int volume) {
+  ready_check_volume_ = volume;
+  if (!ready_check_sound_) return;
+  ready_check_sound_->SetVolume(volume);
 }
 
-void AudioPlayer::UpdateSquadReadyVolume(int volume) {
-  squad_ready_volume = volume;
-  if (!squad_ready_sound) return;
-  squad_ready_sound->SetVolume(volume);
+void AudioPlayer::UpdateSquadReadyVolume(const int volume) {
+  squad_ready_volume_ = volume;
+  if (!squad_ready_sound_) return;
+  squad_ready_sound_->SetVolume(volume);
 }
 
-std::string AudioPlayer::ReadyCheckStatus() { return ready_check_status; }
+std::string AudioPlayer::ReadyCheckStatus() { return ready_check_status_; }
 
-std::string AudioPlayer::SquadReadyStatus() { return squad_ready_status; }
+std::string AudioPlayer::SquadReadyStatus() { return squad_ready_status_; }
 
-void AudioPlayer::PlayReadyCheck() {
+void AudioPlayer::PlayReadyCheck() const {
   logging::Debug("playing ready check");
-  if (!engine) return;
-  if (!ready_check_sound) return;
-  ready_check_sound->Play();
+  if (!engine_) return;
+  if (!ready_check_sound_) return;
+  ready_check_sound_->Play();
 }
 
-void AudioPlayer::PlaySquadReady() {
+void AudioPlayer::PlaySquadReady() const {
   logging::Debug("playing squad ready");
-  if (!engine) return;
-  if (!squad_ready_sound) return;
-  squad_ready_sound->Play();
+  if (!engine_) return;
+  if (!squad_ready_sound_) return;
+  squad_ready_sound_->Play();
 }
 
 WaveFile::WaveFile() {
-  valid = false;
-  buffer = nullptr;
+  valid_ = false;
+  buffer_ = nullptr;
 }
 
-WaveFile::WaveFile(std::string filename, ma_engine* engine) {
-  valid = false;
-  buffer = nullptr;
-  sound = std::make_unique<ma_sound>();
-  decoder = nullptr;
+WaveFile::WaveFile(const std::string& file_name, ma_engine* engine) {
+  valid_ = false;
+  buffer_ = nullptr;
+  sound_ = std::make_unique<ma_sound>();
+  decoder_ = nullptr;
 
-  if (ma_sound_init_from_file(engine, filename.c_str(), MA_SOUND_FLAG_DECODE,
-                              nullptr, nullptr, sound.get()) != MA_SUCCESS) {
+  if (ma_sound_init_from_file(engine, file_name.c_str(), MA_SOUND_FLAG_DECODE,
+                              nullptr, nullptr, sound_.get()) != MA_SUCCESS) {
     return;
   }
 
-  valid = true;
+  valid_ = true;
 }
 
 WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
-  valid = false;
-  buffer = nullptr;
-  sound = std::make_unique<ma_sound>();
-  decoder = std::make_unique<ma_decoder>();
+  valid_ = false;
+  buffer_ = nullptr;
+  sound_ = std::make_unique<ma_sound>();
+  decoder_ = std::make_unique<ma_decoder>();
 
-  auto resource_info = FindResource(globals::self_dll, resource, TEXT("WAVE"));
-  if (resource_info == NULL) return;
+  const auto resource_info = FindResource(globals::self_dll, resource, TEXT("WAVE"));
+  if (resource_info == nullptr) return;
 
-  auto loaded_resource = LoadResource(globals::self_dll, resource_info);
-  if (loaded_resource == NULL) return;
+  const auto loaded_resource = LoadResource(globals::self_dll, resource_info);
+  if (loaded_resource == nullptr) return;
 
-  auto resource_size = SizeofResource(globals::self_dll, resource_info);
+  const auto resource_size = SizeofResource(globals::self_dll, resource_info);
   if (resource_size == 0) return;
 
-  auto resource_pointer = LockResource(loaded_resource);
-  if (resource_pointer == NULL) return;
+  const auto resource_pointer = LockResource(loaded_resource);
+  if (resource_pointer == nullptr) return;
 
-  buffer = new char[resource_size];
-  memcpy(buffer, resource_pointer, resource_size);
+  buffer_ = new char[resource_size];
+  memcpy(buffer_, resource_pointer, resource_size);
 
-  if (ma_decoder_init_memory(buffer, resource_size, NULL, decoder.get()) !=
+  if (ma_decoder_init_memory(buffer_, resource_size, nullptr, decoder_.get()) !=
       MA_SUCCESS) {
     return;
   }
 
-  if (ma_sound_init_from_data_source(engine, decoder.get(),
-                                     MA_SOUND_FLAG_DECODE, NULL,
-                                     sound.get()) != MA_SUCCESS) {
+  if (ma_sound_init_from_data_source(engine, decoder_.get(),
+                                     MA_SOUND_FLAG_DECODE, nullptr,
+                                     sound_.get()) != MA_SUCCESS) {
     return;
   }
 
-  valid = true;
+  valid_ = true;
 }
 
 WaveFile::~WaveFile() {
   logging::Debug("destroying wave file");
-  valid = false;
-  if (sound) {
-    ma_sound_stop(sound.get());
-    ma_sound_uninit(sound.get());
+  valid_ = false;
+  if (sound_) {
+    ma_sound_stop(sound_.get());
+    ma_sound_uninit(sound_.get());
   }
-  if (decoder) {
-    ma_decoder_uninit(decoder.get());
+  if (decoder_) {
+    ma_decoder_uninit(decoder_.get());
   }
-  delete[] buffer;
+  delete[] buffer_;
 }
 
-void WaveFile::Play() {
-  if (!valid) {
+void WaveFile::Play() const {
+  if (!valid_) {
     logging::Debug("wave file is not valid, not playing");
     return;
   }
-  auto engine = ma_sound_get_engine(sound.get());
-  if (!engine) {
+  if (const auto engine = ma_sound_get_engine(sound_.get()); !engine) {
     return;
   }
-  if (ma_sound_start(sound.get()) != MA_SUCCESS) {
+  if (ma_sound_start(sound_.get()) != MA_SUCCESS) {
     logging::Debug("failed to play wave file");
     return;
   };
 }
 
-bool WaveFile::IsValid() { return valid; }
+bool WaveFile::IsValid() const { return valid_; }
 
-void WaveFile::SetVolume(int volume) {
-  if (!valid) return;
-  float ratio = volume / 100.0f;
-  ma_sound_set_volume(sound.get(), ratio);
+void WaveFile::SetVolume(const int volume) const {
+  if (!valid_) return;
+  const float ratio = volume / 100.0f;
+  ma_sound_set_volume(sound_.get(), ratio);
 }

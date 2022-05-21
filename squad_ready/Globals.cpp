@@ -10,47 +10,46 @@ HMODULE self_dll;
 bool unofficial_extras_loaded;
 
 // updates
-std::unique_ptr<UpdateCheckerBase::UpdateState> UPDATE_STATE = nullptr;
+std::unique_ptr<UpdateCheckerBase::UpdateState> update_state = nullptr;
 
 // arc keyboard modifier
-DWORD ARC_GLOBAL_MOD1 = 0;
-DWORD ARC_GLOBAL_MOD2 = 0;
-DWORD ARC_GLOBAL_MOD_MULTI = 0;
+DWORD arc_global_mod1 = 0;
+DWORD arc_global_mod2 = 0;
+DWORD arc_global_mod_multi = 0;
 
 // Arc export Cache
-bool ARC_HIDE_ALL = false;
-bool ARC_PANEL_ALWAYS_DRAW = false;
-bool ARC_MOVELOCK_ALTUI = false;
-bool ARC_CLICKLOCK_ALTUI = false;
-bool ARC_WINDOW_FASTCLOSE = false;
+bool arc_hide_all = false;
+bool arc_panel_always_draw = false;
+bool arc_movelock_altui = false;
+bool arc_clicklock_altui = false;
+bool arc_window_fastclose = false;
 
 // Arc helper functions
 void UpdateArcExports() {
-  uint64_t e6_result = ARC_EXPORT_E6();
+  const uint64_t e6_result = ARC_EXPORT_E6();
   uint64_t e7_result = ARC_EXPORT_E7();
 
-  ARC_HIDE_ALL = (e6_result & 0x01);
-  ARC_PANEL_ALWAYS_DRAW = (e6_result & 0x02);
-  ARC_MOVELOCK_ALTUI = (e6_result & 0x04);
-  ARC_CLICKLOCK_ALTUI = (e6_result & 0x08);
-  ARC_WINDOW_FASTCLOSE = (e6_result & 0x10);
+  arc_hide_all = (e6_result & 0x01);
+  arc_panel_always_draw = (e6_result & 0x02);
+  arc_movelock_altui = (e6_result & 0x04);
+  arc_clicklock_altui = (e6_result & 0x08);
+  arc_window_fastclose = (e6_result & 0x10);
 
-  uint16_t* ra = (uint16_t*)&e7_result;
-  if (ra) {
-    ARC_GLOBAL_MOD1 = ra[0];
-    ARC_GLOBAL_MOD2 = ra[1];
-    ARC_GLOBAL_MOD_MULTI = ra[2];
+  if (auto ra = reinterpret_cast<uint16_t*>(&e7_result)) {
+    arc_global_mod1 = ra[0];
+    arc_global_mod2 = ra[1];
+    arc_global_mod_multi = ra[2];
   }
 }
 
 bool ModsPressed() {
-  auto io = &ImGui::GetIO();
+  const auto io = &ImGui::GetIO();
 
-  return io->KeysDown[ARC_GLOBAL_MOD1] && io->KeysDown[ARC_GLOBAL_MOD2];
+  return io->KeysDown[arc_global_mod1] && io->KeysDown[arc_global_mod2];
 }
 
 bool CanMoveWindows() {
-  if (!ARC_MOVELOCK_ALTUI) {
+  if (!arc_movelock_altui) {
     return true;
   } else {
     return ModsPressed();

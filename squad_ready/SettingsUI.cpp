@@ -5,14 +5,10 @@
 #include "Audio.h"
 #include "Globals.h"
 #include "Settings.h"
-#include "extension/KeyInput.h"
-#include "extension/Widgets.h"
 #include "extension/imgui_stdlib.h"
 #include "imgui/imgui.h"
 
-SettingsUI settingsUI;
-
-void SettingsUI::Draw() {
+void SettingsUI::Draw() const {
   Settings& settings = Settings::instance();
 
   // Ready Check settings
@@ -47,7 +43,7 @@ void SettingsUI::Draw() {
     }
   }
 
-  auto ready_check_status = AudioPlayer::instance().ReadyCheckStatus();
+  const auto ready_check_status = AudioPlayer::instance().ReadyCheckStatus();
   if (!ready_check_status.empty()) {
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
@@ -86,7 +82,7 @@ void SettingsUI::Draw() {
       AudioPlayer::instance().PlaySquadReady();
     }
   }
-  auto squad_ready_status = AudioPlayer::instance().SquadReadyStatus();
+  const auto squad_ready_status = AudioPlayer::instance().SquadReadyStatus();
   if (!squad_ready_status.empty()) {
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),

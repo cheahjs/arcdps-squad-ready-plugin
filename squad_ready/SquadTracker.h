@@ -9,19 +9,17 @@
 #include "unofficial_extras/Definitions.h"
 
 class SquadTracker {
- private:
-  AudioPlayer* audio_player;
-  std::map<std::string, UserInfo> cached_players;
-  std::mutex cached_players_mutex;
-  bool in_ready_check;
+  std::map<std::string, UserInfo> cached_players_;
+  std::mutex cached_players_mutex_;
+  bool in_ready_check_;
 
  public:
-  SquadTracker() : in_ready_check(false) {}
-  void UpdateUsers(const UserInfo* updatedUsers, size_t updatedUsersCount);
+  SquadTracker() : in_ready_check_(false) {}
+  void UpdateUsers(const UserInfo* updated_users, size_t updated_users_count);
 
  private:
   void ReadyCheckStarted();
-  void ReadyCheckCompleted();
+  void ReadyCheckCompleted() const;
   void ReadyCheckEnded();
   bool AllPlayersReadied();
 };

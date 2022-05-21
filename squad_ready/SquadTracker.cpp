@@ -1,34 +1,33 @@
 #include "SquadTracker.h"
 
-void SquadTracker::UpdateUsers(const UserInfo* updatedUsers,
-                               size_t updatedUsersCount) {
-  std::scoped_lock<std::mutex> guard(cached_players_mutex);
+void SquadTracker::UpdateUsers(const UserInfo* updated_users,
+                               const size_t updated_users_count) {
+  std::scoped_lock guard(cached_players_mutex_);
   logging::Debug(
-      std::format("received squad callback with {} users", updatedUsersCount));
-  for (size_t i = 0; i < updatedUsersCount; i++) {
-    const auto user = updatedUsers[i];
-    auto userAccountName = std::string(user.AccountName);
-    if (userAccountName.at(0) == ':') {
-      userAccountName.erase(0, 1);
+      std::format("received squad callback with {} users", updated_users_count));
+  for (size_t i = 0; i < updated_users_count; i++) {
+    const auto user = updated_users[i];
+    auto user_account_name = std::string(user.AccountName);
+    if (user_account_name.at(0) == ':') {
+      user_account_name.erase(0, 1);
     }
     logging::Debug(
         std::format("updated user {} accountname: {} ready: {} role: {} "
                     "jointime: {} subgroup: {}",
-                    i, user.AccountName, user.ReadyStatus, (uint8_t)user.Role,
+                    i, user.AccountName, user.ReadyStatus, static_cast<uint8_t>(user.Role),
                     user.JoinTime, user.Subgroup));
     // User added/updated
     if (user.Role != UserRole::None) {
-      auto oldUserIt = cached_players.find(userAccountName);
-      if (oldUserIt == cached_players.end()) {
+      if (auto old_user_it = cached_players_.find(user_account_name); old_user_it == cached_players_.end()) {
         // User added
-        cached_players.emplace(userAccountName, user);
+        cached_players_.emplace(user_account_name, user);
       } else {
         // User updated
-        auto oldUser = oldUserIt->second;
-        cached_players.insert_or_assign(userAccountName, user);
+        const auto old_user = old_user_it->second;
+        cached_players_.insert_or_assign(user_account_name, user);
 
         if (user.Role == UserRole::SquadLeader) {
-          if (user.ReadyStatus && !oldUser.ReadyStatus) {
+          if (user.ReadyStatus && !old_user.ReadyStatus) {
             // Squad leader has started a ready check
             ReadyCheckStarted();
           } else {
@@ -45,12 +44,12 @@ void SquadTracker::UpdateUsers(const UserInfo* updatedUsers,
     }
     // User removed
     else {
-      if (userAccountName == globals::self_account_name) {
+      if (user_account_name == globals::self_account_name) {
         // Self left squad, reset cache
-        cached_players.clear();
+        cached_players_.clear();
       } else {
         // Remove player from cache
-        cached_players.erase(userAccountName);
+        cached_players_.erase(user_account_name);
       }
     }
   }
@@ -58,28 +57,28 @@ void SquadTracker::UpdateUsers(const UserInfo* updatedUsers,
 
 void SquadTracker::ReadyCheckStarted() {
   logging::Debug("ready check has started");
-  in_ready_check = true;
+  in_ready_check_ = true;
   AudioPlayer::instance().PlayReadyCheck();
 }
 
-void SquadTracker::ReadyCheckCompleted() {
+void SquadTracker::ReadyCheckCompleted() const {
   logging::Debug("squad is ready");
   AudioPlayer::instance().PlaySquadReady();
 }
 
 void SquadTracker::ReadyCheckEnded() {
   logging::Debug("ready check has ended");
-  in_ready_check = false;
+  in_ready_check_ = false;
 }
 
 bool SquadTracker::AllPlayersReadied() {
   // iterate through all cachedPlayers, and check readyStatus == true and
   // in squad
-  for (auto const& [accountName, user] : cached_players) {
+  for (auto const& [accountName, user] : cached_players_) {
     if (user.Role != UserRole::SquadLeader &&
         user.Role != UserRole::Lieutenant && user.Role != UserRole::Member) {
       logging::Debug(std::format("ignoring {} because they are role {}",
-                                 accountName, (int)user.Role));
+                                 accountName, static_cast<int>(user.Role)));
       continue;
     }
     if (!user.ReadyStatus) {

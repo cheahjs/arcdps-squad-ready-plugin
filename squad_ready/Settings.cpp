@@ -5,20 +5,20 @@
 void Settings::load() {
   // according to standard, this constructor is completely thread-safe
   // read settings from file
-  readFromFile();
+  ReadFromFile();
 }
 
 void Settings::unload() {
   try {
-    saveToFile();
+    SaveToFile();
   } catch (const std::exception& e) {
     // Some exception happened, i cannot do anything against it here :(
   }
 }
 
-void Settings::saveToFile() {
+void Settings::SaveToFile() {
   // create json object
-  auto json = nlohmann::json(settings);
+  const auto json = nlohmann::json(settings);
 
   // open output file
   std::ofstream json_file(kSettingsJsonPath);
@@ -27,11 +27,10 @@ void Settings::saveToFile() {
   json_file << json;
 }
 
-void Settings::readFromFile() {
+void Settings::ReadFromFile() {
   try {
     // read a JSON file as stream
-    std::ifstream json_file(kSettingsJsonPath);
-    if (json_file.is_open()) {
+    if (std::ifstream json_file(kSettingsJsonPath); json_file.is_open()) {
       nlohmann::json json;
 
       // push stream into json object (this also parses it)

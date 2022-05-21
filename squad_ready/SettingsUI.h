@@ -1,10 +1,9 @@
 #pragma once
+#include "extension/Singleton.h"
 
-class SettingsUI {
+class SettingsUI : public Singleton<SettingsUI> {
  public:
   SettingsUI() = default;
 
-  void Draw();
+  void Draw() const;
 };
-
-extern SettingsUI settingsUI;

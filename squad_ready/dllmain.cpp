@@ -1,9 +1,8 @@
 #include <Windows.h>
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 #include <map>
-#include <mutex>
 
 #include "Audio.h"
 #include "Globals.h"
@@ -21,13 +20,13 @@
 #include "imgui/imgui.h"
 #include "unofficial_extras/Definitions.h"
 
-const char* SQUAD_READY_PLUGIN_NAME = "Squad Ready";
-const char* SQUAD_READY_RELEASE_URL =
+const std::string kSquadReadyPluginName = "Squad Ready";
+const std::string kSquadReadyReleaseUrl =
     "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest";
 
 /* proto/globals */
 arcdps_exports arc_exports = {};
-char* arcvers;
+char* arc_version;
 std::unique_ptr<SquadTracker> squad_tracker;
 
 /* arcdps exports */
@@ -110,8 +109,8 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       case WM_ACTIVATEAPP: {
         globals::UpdateArcExports();
         if (!wParam) {
-          io->KeysDown[globals::ARC_GLOBAL_MOD1] = false;
-          io->KeysDown[globals::ARC_GLOBAL_MOD2] = false;
+          io->KeysDown[globals::arc_global_mod1] = false;
+          io->KeysDown[globals::arc_global_mod2] = false;
         }
         break;
       }
@@ -127,7 +126,7 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 uintptr_t mod_options() {
-  settingsUI.Draw();
+  SettingsUI::instance().Draw();
 
   return 0;
 }
@@ -140,7 +139,7 @@ uintptr_t mod_windows(const char* windowname) {
 
 uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
   UpdateChecker::instance().Draw(
-      globals::UPDATE_STATE, SQUAD_READY_PLUGIN_NAME,
+      globals::update_state, kSquadReadyPluginName,
       "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest");
 
   return 0;
@@ -159,7 +158,7 @@ arcdps_exports* mod_init() {
     UpdateChecker::instance().ClearFiles(globals::self_dll);
 
     if (current_version) {
-      globals::UPDATE_STATE =
+      globals::update_state =
           std::move(UpdateChecker::instance().CheckForUpdate(
               globals::self_dll, current_version.value(),
               "cheahjs/arcdps-squad-ready-plugin", false));
@@ -180,12 +179,12 @@ arcdps_exports* mod_init() {
 
   memset(&arc_exports, 0, sizeof(arcdps_exports));
   arc_exports.imguivers = IMGUI_VERSION_NUM;
-  arc_exports.out_name = SQUAD_READY_PLUGIN_NAME;
+  arc_exports.out_name = kSquadReadyPluginName.c_str();
   const std::string& version =
       current_version ? UpdateChecker::instance().GetVersionAsString(
                             current_version.value())
                       : "Unknown";
-  char* version_c_str = new char[version.length() + 1];
+  const auto version_c_str = new char[version.length() + 1];
   strcpy_s(version_c_str, version.length() + 1, version.c_str());
   arc_exports.out_build = version_c_str;
 
@@ -200,10 +199,10 @@ arcdps_exports* mod_init() {
     init_failed = true;
     arc_exports.sig = 0;
     const std::string::size_type size = error_message.size();
-    char* buffer =
+    auto buffer =
         new char[error_message.length() + 1];  // we need extra char for NUL
     memcpy(buffer, error_message.c_str(), size + 1);
-    arc_exports.size = (uintptr_t)buffer;
+    arc_exports.size = reinterpret_cast<uintptr_t>(buffer);
   }
 
   logging::Debug("done mod_init");
@@ -214,9 +213,9 @@ arcdps_exports* mod_init() {
 uintptr_t mod_release() {
   FreeConsole();
 
-  if (globals::UPDATE_STATE) {
-    globals::UPDATE_STATE->FinishPendingTasks();
-    globals::UPDATE_STATE.reset(nullptr);
+  if (globals::update_state) {
+    globals::update_state->FinishPendingTasks();
+    globals::update_state.reset(nullptr);
   }
 
   Settings::instance().unload();
@@ -233,22 +232,22 @@ extern "C" __declspec(dllexport) void* get_init_addr(
     void* mallocfn, void* freefn, uint32_t d3dversion) {
   // id3dptr is IDirect3D9* if d3dversion==9, or IDXGISwapChain* if
   // d3dversion==11
-  arcvers = arcversion;
+  arc_version = arcversion;
   ImGui::SetCurrentContext(imguicontext);
-  ImGui::SetAllocatorFunctions((void* (*)(size_t, void*))mallocfn,
-                               (void (*)(void*, void*))freefn);
+  ImGui::SetAllocatorFunctions(static_cast<void*(*)(size_t, void*)>(mallocfn),
+                               static_cast<void(*)(void*, void*)>(freefn));
 
-  ARC_EXPORT_E6 = (arc_export_func_u64)GetProcAddress(arcdll, "e6");
-  ARC_EXPORT_E7 = (arc_export_func_u64)GetProcAddress(arcdll, "e7");
-  ARC_LOG_FILE = (e3_func_ptr)GetProcAddress(arcdll, "e3");
-  ARC_LOG = (e3_func_ptr)GetProcAddress(arcdll, "e8");
+  ARC_EXPORT_E6 = reinterpret_cast<arc_export_func_u64>(GetProcAddress(arcdll, "e6"));
+  ARC_EXPORT_E7 = reinterpret_cast<arc_export_func_u64>(GetProcAddress(arcdll, "e7"));
+  ARC_LOG_FILE = reinterpret_cast<e3_func_ptr>(GetProcAddress(arcdll, "e3"));
+  ARC_LOG = reinterpret_cast<e3_func_ptr>(GetProcAddress(arcdll, "e8"));
   return mod_init;
 }
 
 /* export -- arcdps looks for this exported function and calls the address it
  * returns on client exit */
 extern "C" __declspec(dllexport) void* get_release_addr() {
-  arcvers = nullptr;
+  arc_version = nullptr;
   return mod_release;
 }
 
@@ -290,24 +289,24 @@ extern "C" __declspec(dllexport) void arcdps_unofficial_extras_subscriber_init(
   }
   if (pExtrasInfo->ApiVersion == 1) {
     // V1 of the unofficial extras API, treat is as that!
-    ExtrasSubscriberInfo* extrasSubscriberInfo =
+    const auto extras_subscriber_info =
         static_cast<ExtrasSubscriberInfo*>(pSubscriberInfo);
 
     globals::UpdateSelfUser(pExtrasInfo->SelfAccountName);
 
-    extrasSubscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
-    extrasSubscriberInfo->SquadUpdateCallback = squad_update_callback;
+    extras_subscriber_info->SubscriberName = kSquadReadyPluginName.c_str();
+    extras_subscriber_info->SquadUpdateCallback = squad_update_callback;
   }
   // MaxInfoVersion has to be higher to have enough space to hold this object
   else if (pExtrasInfo->ApiVersion == 2 && pExtrasInfo->MaxInfoVersion >= 1) {
-    ExtrasSubscriberInfoV1* subscriberInfo =
+    const auto subscriber_info =
         static_cast<ExtrasSubscriberInfoV1*>(pSubscriberInfo);
 
     globals::UpdateSelfUser(pExtrasInfo->SelfAccountName);
 
-    subscriberInfo->InfoVersion = 1;
-    subscriberInfo->SubscriberName = SQUAD_READY_PLUGIN_NAME;
-    subscriberInfo->SquadUpdateCallback = squad_update_callback;
+    subscriber_info->InfoVersion = 1;
+    subscriber_info->SubscriberName = kSquadReadyPluginName.c_str();
+    subscriber_info->SquadUpdateCallback = squad_update_callback;
   }
   logging::Debug("done arcdps_unofficial_extras_subscriber_init");
 }

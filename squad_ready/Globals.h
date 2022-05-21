@@ -14,19 +14,19 @@ extern HMODULE self_dll;
 extern bool unofficial_extras_loaded;
 
 // Updating myself stuff
-extern std::unique_ptr<UpdateCheckerBase::UpdateState> UPDATE_STATE;
+extern std::unique_ptr<UpdateCheckerBase::UpdateState> update_state;
 
 // arc keyboard modifier
-extern DWORD ARC_GLOBAL_MOD1;
-extern DWORD ARC_GLOBAL_MOD2;
-extern DWORD ARC_GLOBAL_MOD_MULTI;
+extern DWORD arc_global_mod1;
+extern DWORD arc_global_mod2;
+extern DWORD arc_global_mod_multi;
 
 // Arc export Cache
-extern bool ARC_HIDE_ALL;
-extern bool ARC_PANEL_ALWAYS_DRAW;
-extern bool ARC_MOVELOCK_ALTUI;
-extern bool ARC_CLICKLOCK_ALTUI;
-extern bool ARC_WINDOW_FASTCLOSE;
+extern bool arc_hide_all;
+extern bool arc_panel_always_draw;
+extern bool arc_movelock_altui;
+extern bool arc_clicklock_altui;
+extern bool arc_window_fastclose;
 
 // Arc helper functions
 void UpdateArcExports();
