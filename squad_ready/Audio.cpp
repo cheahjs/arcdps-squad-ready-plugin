@@ -6,21 +6,27 @@
 #include "resource.h"
 
 AudioPlayer::~AudioPlayer() {
-  ready_check_sound_.reset();
-  squad_ready_sound_.reset();
-  if (engine_) {
-    ma_engine_uninit(engine_.get());
-  }
+  Destroy();
 }
 
 bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check_volume,
                        const std::string squad_ready_path, const int squad_ready_volume) {
   bool success = true;
 
+  ready_check_path_ = ready_check_path;
+  squad_ready_path_ = squad_ready_path;
+
   engine_ = std::make_unique<ma_engine>();
   if (ma_engine_init(nullptr, engine_.get()) != MA_SUCCESS) {
     logging::Squad("Failed to initialize audio engine");
     return false;
+  }
+  const auto device = ma_engine_get_device(engine_.get());
+  ma_device_info device_info;
+  if (ma_device_get_info(device, ma_device_type_playback, &device_info) == MA_SUCCESS) {
+    output_device_name_ = std::string(device_info.name);
+  } else {
+    output_device_name_ = "Unknown";
   }
 
   if (!UpdateReadyCheck(ready_check_path)) {
@@ -40,8 +46,13 @@ bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check
   return success;
 }
 
+bool AudioPlayer::ReInit() {
+  Destroy();
+  return Init(ready_check_path_, ready_check_volume_, squad_ready_path_,
+       squad_ready_volume_);
+}
+
 bool AudioPlayer::UpdateReadyCheck(const std::string& path) {
-  bool success = false;
   if (path.empty()) {
     logging::Debug("loading default ready check");
     ready_check_sound_ =
@@ -49,7 +60,7 @@ bool AudioPlayer::UpdateReadyCheck(const std::string& path) {
   } else {
     ready_check_sound_ = std::make_unique<WaveFile>(path, engine_.get());
   }
-  success = ready_check_sound_->IsValid();
+  const bool success = ready_check_sound_->IsValid();
   if (!success) {
     logging::Debug("failed to load ready check");
     ready_check_status_ = "Failed to load";
@@ -61,7 +72,6 @@ bool AudioPlayer::UpdateReadyCheck(const std::string& path) {
 }
 
 bool AudioPlayer::UpdateSquadReady(const std::string& path) {
-  bool success = false;
   if (path.empty()) {
     logging::Debug("loading default squad ready");
     squad_ready_sound_ =
@@ -69,7 +79,7 @@ bool AudioPlayer::UpdateSquadReady(const std::string& path) {
   } else {
     squad_ready_sound_ = std::make_unique<WaveFile>(path, engine_.get());
   }
-  success = squad_ready_sound_->IsValid();
+  const bool success = squad_ready_sound_->IsValid();
   if (!success) {
     logging::Debug("failed to load squad ready");
     squad_ready_status_ = "Failed to load";
@@ -95,6 +105,16 @@ void AudioPlayer::UpdateSquadReadyVolume(const int volume) {
 std::string AudioPlayer::ReadyCheckStatus() { return ready_check_status_; }
 
 std::string AudioPlayer::SquadReadyStatus() { return squad_ready_status_; }
+
+std::string AudioPlayer::OutputDeviceName() { return output_device_name_; }
+
+void AudioPlayer::Destroy() {
+  ready_check_sound_.reset();
+  squad_ready_sound_.reset();
+  if (engine_) {
+    ma_engine_uninit(engine_.get());
+  }
+}
 
 void AudioPlayer::PlayReadyCheck() const {
   logging::Debug("playing ready check");
@@ -187,8 +207,7 @@ void WaveFile::Play() const {
   }
   if (ma_sound_start(sound_.get()) != MA_SUCCESS) {
     logging::Debug("failed to play wave file");
-    return;
-  };
+  }
 }
 
 bool WaveFile::IsValid() const { return valid_; }

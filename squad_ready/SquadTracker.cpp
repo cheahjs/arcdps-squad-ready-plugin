@@ -1,5 +1,7 @@
 #include "SquadTracker.h"
 
+#include "Globals.h"
+
 void SquadTracker::UpdateUsers(const UserInfo* updated_users,
                                const size_t updated_users_count) {
   std::scoped_lock guard(cached_players_mutex_);

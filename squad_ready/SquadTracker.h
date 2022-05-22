@@ -4,8 +4,6 @@
 #include <mutex>
 
 #include "Audio.h"
-#include "Globals.h"
-#include "Logging.h"
 #include "unofficial_extras/Definitions.h"
 
 class SquadTracker {

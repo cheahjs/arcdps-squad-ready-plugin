@@ -89,10 +89,11 @@ void SettingsUI::Draw() const {
                        squad_ready_status.c_str());
   }
 
-  // Unofficial extras status
+  // Status
   ImGui::Spacing();
   ImGui::Separator();
   ImGui::Spacing();
+  ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Status");
 
   ImGui::BeginGroup();
   ImGui::Text("Unofficial extras status: ");
@@ -106,5 +107,10 @@ void SettingsUI::Draw() const {
   if (ImGui::IsItemHovered()) {
     ImGui::SetTooltip(
         "Unofficial extras is required for receiving squad member updates.");
+  }
+
+  ImGui::Text(std::format("Output device: {}", AudioPlayer::instance().OutputDeviceName()).c_str());
+  if (ImGui::Button("Reset Audio")) {
+    AudioPlayer::instance().ReInit(); 
   }
 }

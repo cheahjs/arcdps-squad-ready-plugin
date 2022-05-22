@@ -34,6 +34,7 @@ class AudioPlayer final : public Singleton<AudioPlayer> {
 
   bool Init(std::string ready_check_path, int ready_check_volume,
             std::string squad_ready_path, int squad_ready_volume);
+  bool ReInit();
   void PlayReadyCheck() const;
   void PlaySquadReady() const;
   bool UpdateReadyCheck(const std::string& path);
@@ -42,13 +43,19 @@ class AudioPlayer final : public Singleton<AudioPlayer> {
   void UpdateSquadReadyVolume(int volume);
   std::string ReadyCheckStatus();
   std::string SquadReadyStatus();
+  std::string OutputDeviceName();
 
- private:
+private:
+  void Destroy();
+
   std::unique_ptr<WaveFile> ready_check_sound_;
-  std::unique_ptr<WaveFile> squad_ready_sound_;
   int ready_check_volume_;
+  std::string ready_check_path_;
+  std::unique_ptr<WaveFile> squad_ready_sound_;
   int squad_ready_volume_;
+  std::string squad_ready_path_;
   std::unique_ptr<ma_engine> engine_;
   std::string ready_check_status_;
   std::string squad_ready_status_;
+  std::string output_device_name_;
 };
