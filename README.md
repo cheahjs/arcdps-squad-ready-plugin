@@ -10,7 +10,7 @@ https://user-images.githubusercontent.com/818368/169086436-0515382a-b121-43c7-ac
 
 [arcdps](https://www.deltaconnected.com/arcdps/) and the [unofficial extras plugin](https://github.com/Krappa322/arcdps_unofficial_extras_releases) should be installed.
 
-Download the [latest release from the Releases page](https://github.com/Krappa322/arcdps_unofficial_extras_releases/releases/latest).
+Download the [latest release from the Releases page](https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest).
 
 Place the .dll file into the same folder as arcdps.
 
