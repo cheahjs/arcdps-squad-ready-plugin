@@ -1,0 +1,31 @@
+[package]
+name = "arcdps-squad-ready-plugin"
+version = "0.0.1"
+edition = "2021"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "arcdps_squad_ready"
+crate-type = ["cdylib"]
+
+[dependencies]
+arcdps = { version = "0.7.0", features = ["log"] }
+backtrace = "0.3"
+log = { version = "0.4", features = ["max_level_trace", "release_max_level_info"] }
+static_init = "1.0.2"
+time = { version = "0.3", features = ["formatting", "macros"] }
+winapi = { version = "0.3", features = ["consoleapi", "dbghelp", "memoryapi", "psapi"] }
+
+[patch.crates-io]
+# Use Krappa's fork with new unofficial extras support
+arcdps = { git = "https://github.com/Krappa322/arcdps_bindings.git" }
+arcdps_codegen = { git = "https://github.com/Krappa322/arcdps_bindings.git" }
+
+[dev-dependencies]
+more-asserts = "0.2"
+rstest = "0.12"
+
+[build-dependencies]
+winres = "0.1"
