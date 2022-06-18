@@ -1,8 +1,7 @@
-
 use arcdps::{UserInfo, UserInfoIter, UserRole};
+use log::*;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use log::*;
 
 pub struct SquadMemberState {
     pub join_time: u64,
@@ -31,18 +30,23 @@ impl SquadMemberState {
 
 pub struct SquadTracker {
     self_account_name: String,
-    squad_members: HashMap<String, SquadMemberState>
+    squad_members: HashMap<String, SquadMemberState>,
 }
 
 impl SquadTracker {
     pub fn new(self_account_name: &str) -> Self {
         Self {
             self_account_name: String::from(self_account_name),
-            squad_members: HashMap::new()
+            squad_members: HashMap::new(),
         }
     }
 
-    pub fn squad_update(&mut self, users: UserInfoIter, ready_check_callback: Option<fn()>, squad_ready_callback: Option<fn()>) {
+    pub fn squad_update(
+        &mut self,
+        users: UserInfoIter,
+        ready_check_callback: Option<fn()>,
+        squad_ready_callback: Option<fn()>,
+    ) {
         let SquadTracker {
             self_account_name,
             squad_members,
@@ -108,7 +112,10 @@ impl SquadTracker {
             };
 
             match user_update.role {
-                UserRole::SquadLeader | UserRole::Lieutenant | UserRole::Member | UserRole::None => {
+                UserRole::SquadLeader
+                | UserRole::Lieutenant
+                | UserRole::Member
+                | UserRole::None => {
                     // Check if the entire squad is ready if a member of the squad is updated
                     if check_all_ready(squad_members) {
                         if let Some(ready_callback) = squad_ready_callback {
@@ -126,7 +133,7 @@ impl SquadTracker {
 // A ready check is considered started if the user is a squad leader, and that they have just readied up.
 fn check_ready_status(user: &mut SquadMemberState) -> bool {
     if user.role != UserRole::SquadLeader {
-        return false
+        return false;
     }
     user.is_ready
 }
@@ -145,9 +152,16 @@ fn check_all_ready(squad_members: &mut HashMap<String, SquadMemberState>) -> boo
     }
 
     if readied_users.len() == squad_member_count {
-        debug!("All {} users readied - ready check done", squad_member_count);
+        debug!(
+            "All {} users readied - ready check done",
+            squad_member_count
+        );
         return true;
     }
-    debug!("{}/{} users readied", readied_users.len(), squad_member_count);
+    debug!(
+        "{}/{} users readied",
+        readied_users.len(),
+        squad_member_count
+    );
     false
 }

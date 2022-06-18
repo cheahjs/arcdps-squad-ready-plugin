@@ -8,8 +8,8 @@ use arcdps::UserInfoIter;
 use audio::AudioPlayer;
 use log::*;
 use panic_handler::install_panic_handler;
-use static_init::dynamic;
 use squad_tracker::SquadTracker;
+use static_init::dynamic;
 
 arcdps_export! {
     name: "Squad Ready",
@@ -52,8 +52,6 @@ fn init() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn release() {
-}
+fn release() {}
 
-fn options_end(ui: &imgui::Ui) {
-}
+fn options_end(ui: &imgui::Ui) {}

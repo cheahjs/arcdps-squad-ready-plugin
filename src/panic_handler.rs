@@ -1,7 +1,7 @@
 // Taken from https://github.com/Krappa322/arcdps_squad_manager/blob/98aeddde1d5af6fe5525dffdada9e851816bd917/src/infra.rs
 
-use log::*;
 use backtrace::Backtrace;
+use log::*;
 use winapi::shared::ntdef::TRUE;
 use winapi::um::dbghelp;
 use winapi::um::processthreadsapi::GetCurrentProcess;

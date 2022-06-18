@@ -1,9 +1,3 @@
+pub struct AudioPlayer {}
 
-
-pub struct AudioPlayer {
-
-}
-
-impl AudioPlayer {
-
-}
+impl AudioPlayer {}
