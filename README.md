@@ -1,3 +1,5 @@
+# This is the WIP Rust rewrite branch
+
 # arcdps Squad Ready plugin
 
 Plugin for arcdps to play audio files when a ready check has started and completed.
