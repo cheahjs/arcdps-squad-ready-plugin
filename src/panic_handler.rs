@@ -23,7 +23,7 @@ fn panic_handler(panic_info: &std::panic::PanicInfo) {
     let bt = Backtrace::new();
     error!("Caught panic \"{}\"", panic_info);
 
-    for (i, frame) in bt.frames().into_iter().enumerate() {
+    for (i, frame) in bt.frames().iter().enumerate() {
         // Resolve module name
         let mut mod_info: dbghelp::IMAGEHLP_MODULEW64;
         unsafe {
@@ -36,7 +36,7 @@ fn panic_handler(panic_info: &std::panic::PanicInfo) {
             .symbols()
             .first()
             .and_then(|x| x.name().map(|y| format!("{}", y)))
-            .unwrap_or("<unknown function>".to_string());
+            .unwrap_or_else(|| "<unknown function>".to_string());
 
         let symbol_offset = frame
             .symbols()

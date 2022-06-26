@@ -2,6 +2,7 @@ use arcdps::{UserInfo, UserInfoIter, UserRole};
 use log::*;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 
 pub struct SquadMemberState {
     pub join_time: u64,
@@ -31,13 +32,16 @@ impl SquadMemberState {
 pub struct SquadTracker {
     self_account_name: String,
     squad_members: HashMap<String, SquadMemberState>,
+
+    ui_state: crate::ui::SharedState,
 }
 
 impl SquadTracker {
-    pub fn new(self_account_name: &str) -> Self {
+    pub fn new(self_account_name: &str, ui_state: crate::ui::SharedState) -> Self {
         Self {
             self_account_name: String::from(self_account_name),
             squad_members: HashMap::new(),
+            ui_state,
         }
     }
 
@@ -50,6 +54,7 @@ impl SquadTracker {
         let SquadTracker {
             self_account_name,
             squad_members,
+            ui_state,
         } = &mut *self;
 
         debug!("Received {:?} updates", users.len());
