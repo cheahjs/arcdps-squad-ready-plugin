@@ -18,12 +18,14 @@ class Settings final : public Singleton<Settings> {
     std::optional<std::string> squad_ready_path;
     int ready_check_volume = 100;
     int squad_ready_volume = 100;
+    bool flash_window = true;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE_NON_THROWING(SettingsObject,
                                                 ready_check_path,
                                                 squad_ready_path,
                                                 ready_check_volume,
-                                                squad_ready_volume)
+                                                squad_ready_volume,
+                                                flash_window)
   };
 
   Settings() = default;

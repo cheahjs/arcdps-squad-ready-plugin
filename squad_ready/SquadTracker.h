@@ -20,4 +20,5 @@ class SquadTracker {
   void ReadyCheckCompleted() const;
   void ReadyCheckEnded();
   bool AllPlayersReadied();
+  static void FlashWindow();
 };

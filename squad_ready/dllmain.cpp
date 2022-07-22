@@ -69,6 +69,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
  * processed by arcdps or game) */
 uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   try {
+    globals::some_window = hWnd;
+
     if (ImGuiEx::KeyCodeInputWndHandle(hWnd, uMsg, wParam, lParam)) {
       return 0;
     }

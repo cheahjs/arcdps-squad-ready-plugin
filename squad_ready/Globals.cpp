@@ -7,6 +7,7 @@ namespace globals {
 
 std::string self_account_name;
 HMODULE self_dll;
+HWND some_window = nullptr;
 bool unofficial_extras_loaded;
 
 // updates
