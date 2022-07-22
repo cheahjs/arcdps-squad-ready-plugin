@@ -89,6 +89,13 @@ void SettingsUI::Draw() const {
                        squad_ready_status.c_str());
   }
 
+  // Global settings
+  ImGui::Spacing();
+  ImGui::Separator();
+  ImGui::Spacing();
+  bool& flash_window = settings.settings.flash_window;
+  ImGui::Checkbox("Flash window and tray icon", &flash_window);
+
   // Status
   ImGui::Spacing();
   ImGui::Separator();

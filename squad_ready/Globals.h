@@ -11,6 +11,7 @@ namespace globals {
 
 extern std::string self_account_name;
 extern HMODULE self_dll;
+extern HWND some_window;
 extern bool unofficial_extras_loaded;
 
 // Updating myself stuff

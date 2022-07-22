@@ -1,6 +1,7 @@
 #include "SquadTracker.h"
 
 #include "Globals.h"
+#include "Settings.h"
 
 void SquadTracker::UpdateUsers(const UserInfo* updated_users,
                                const size_t updated_users_count) {
@@ -60,11 +61,13 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
 void SquadTracker::ReadyCheckStarted() {
   logging::Debug("ready check has started");
   in_ready_check_ = true;
+  FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
 }
 
 void SquadTracker::ReadyCheckCompleted() const {
   logging::Debug("squad is ready");
+  FlashWindow();
   AudioPlayer::instance().PlaySquadReady();
 }
 
@@ -90,4 +93,17 @@ bool SquadTracker::AllPlayersReadied() {
   }
   logging::Debug("all players are readied");
   return true;
+}
+
+void SquadTracker::FlashWindow() {
+  if (!Settings::instance().settings.flash_window) {
+    return;
+  }
+  const auto wnd = globals::some_window;
+  if (wnd == nullptr) {
+    return;
+  }
+  FLASHWINFO flash_info{sizeof(flash_info), wnd,
+                       FLASHW_ALL | FLASHW_TIMERNOFG, 100, 0};
+  FlashWindowEx(&flash_info);
 }
