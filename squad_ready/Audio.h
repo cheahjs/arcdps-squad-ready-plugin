@@ -19,11 +19,13 @@ class WaveFile {
   void Play() const;
   bool IsValid() const;
   void SetVolume(int volume) const;
+  std::string ErrorMessage() const;
 
  private:
   char* buffer_;
   std::unique_ptr<ma_sound> sound_;
   std::unique_ptr<ma_decoder> decoder_;
+  std::string error_message_ = "Unknown error";
   bool valid_;
 };
 

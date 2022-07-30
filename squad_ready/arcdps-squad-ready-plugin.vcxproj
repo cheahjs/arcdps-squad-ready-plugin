@@ -182,6 +182,7 @@
     <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image.h" />
     <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image_resize.h" />
     <ClInclude Include="Audio.h" />
+    <ClInclude Include="Error.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Logging.h" />
     <ClInclude Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.h" />

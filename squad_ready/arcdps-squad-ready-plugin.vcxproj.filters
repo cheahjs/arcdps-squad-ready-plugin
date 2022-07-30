@@ -78,6 +78,9 @@
     <ClInclude Include="..\modules\ImGuiFileDialog\dirent\dirent.h">
       <Filter>Header Files\ImGuiFileDialog</Filter>
     </ClInclude>
+    <ClInclude Include="Error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

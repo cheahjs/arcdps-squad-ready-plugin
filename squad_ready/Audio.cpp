@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "Error.h"
 #include "Globals.h"
 #include "resource.h"
 
@@ -30,15 +31,15 @@ bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check
   }
 
   if (!UpdateReadyCheck(ready_check_path)) {
-    logging::Squad(std::format("Failed to load ready check audio from {}",
-                               ready_check_path));
+    logging::Squad(std::format("Failed to load ready check audio from {}: {}",
+                               ready_check_path, ready_check_status_));
     success = false;
   }
   UpdateReadyCheckVolume(ready_check_volume);
 
   if (!UpdateSquadReady(squad_ready_path)) {
-    logging::Squad(std::format("Failed to load squad ready audio from {}",
-                               squad_ready_path));
+    logging::Squad(std::format("Failed to load squad ready audio from {}: {}",
+                               squad_ready_path, squad_ready_status_));
     success = false;
   }
   UpdateSquadReadyVolume(squad_ready_volume);
@@ -63,7 +64,7 @@ bool AudioPlayer::UpdateReadyCheck(const std::string& path) {
   const bool success = ready_check_sound_->IsValid();
   if (!success) {
     logging::Debug("failed to load ready check");
-    ready_check_status_ = "Failed to load";
+    ready_check_status_ = ready_check_sound_->ErrorMessage();
   } else {
     ready_check_status_ = "";
   }
@@ -82,7 +83,7 @@ bool AudioPlayer::UpdateSquadReady(const std::string& path) {
   const bool success = squad_ready_sound_->IsValid();
   if (!success) {
     logging::Debug("failed to load squad ready");
-    squad_ready_status_ = "Failed to load";
+    squad_ready_status_ = squad_ready_sound_->ErrorMessage();
   } else {
     squad_ready_status_ = "";
   }
@@ -141,8 +142,11 @@ WaveFile::WaveFile(const std::string& file_name, ma_engine* engine) {
   sound_ = std::make_unique<ma_sound>();
   decoder_ = nullptr;
 
-  if (ma_sound_init_from_file(engine, file_name.c_str(), MA_SOUND_FLAG_DECODE,
-                              nullptr, nullptr, sound_.get()) != MA_SUCCESS) {
+  const auto result =
+      ma_sound_init_from_file(engine, file_name.c_str(), MA_SOUND_FLAG_DECODE,
+                              nullptr, nullptr, sound_.get());
+  if (result != MA_SUCCESS) {
+    error_message_ = std::format("Failed to load: {}", error::humanize_ma_result(result));
     return;
   }
 
@@ -170,14 +174,18 @@ WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
   buffer_ = new char[resource_size];
   memcpy(buffer_, resource_pointer, resource_size);
 
-  if (ma_decoder_init_memory(buffer_, resource_size, nullptr, decoder_.get()) !=
-      MA_SUCCESS) {
+  const auto decode_result =
+      ma_decoder_init_memory(buffer_, resource_size, nullptr, decoder_.get());
+  if (decode_result != MA_SUCCESS) {
+    error_message_ = std::format("Internal error, failed to init decoder: {}", error::humanize_ma_result(decode_result));
     return;
   }
 
-  if (ma_sound_init_from_data_source(engine, decoder_.get(),
-                                     MA_SOUND_FLAG_DECODE, nullptr,
-                                     sound_.get()) != MA_SUCCESS) {
+  const auto sound_init_result = ma_sound_init_from_data_source(
+      engine, decoder_.get(), MA_SOUND_FLAG_DECODE, nullptr, sound_.get());
+  if (sound_init_result != MA_SUCCESS) {
+    error_message_ = std::format("Internal error, failed to init sound: {}",
+                                 error::humanize_ma_result(sound_init_result));
     return;
   }
 
@@ -211,6 +219,9 @@ void WaveFile::Play() const {
 }
 
 bool WaveFile::IsValid() const { return valid_; }
+
+std::string WaveFile::ErrorMessage() const { return error_message_; }
+
 
 void WaveFile::SetVolume(const int volume) const {
   if (!valid_) return;
