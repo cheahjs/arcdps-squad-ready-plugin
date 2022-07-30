@@ -31,6 +31,12 @@
     <Filter Include="Source Files\miniaudio\extras\miniaudio_split">
       <UniqueIdentifier>{656e94f5-d5a6-488d-ae36-714b17af1b9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ImGuiFileDialog">
+      <UniqueIdentifier>{7e5a918e-91e2-4f5b-a33b-574bbb731aa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImGuiFileDialog">
+      <UniqueIdentifier>{be5d014e-4fde-436a-952f-a6846b54132b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logging.h">
@@ -57,6 +63,21 @@
     <ClInclude Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.h">
       <Filter>Header Files\miniaudio\extras\miniaudio_split</Filter>
     </ClInclude>
+    <ClInclude Include="..\modules\ImGuiFileDialog\ImGuiFileDialog.h">
+      <Filter>Header Files\ImGuiFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\ImGuiFileDialog\ImGuiFileDialogConfig.h">
+      <Filter>Header Files\ImGuiFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image.h">
+      <Filter>Header Files\ImGuiFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image_resize.h">
+      <Filter>Header Files\ImGuiFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\ImGuiFileDialog\dirent\dirent.h">
+      <Filter>Header Files\ImGuiFileDialog</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -82,6 +103,9 @@
     </ClCompile>
     <ClCompile Include="..\modules\miniaudio\extras\miniaudio_split\miniaudio.c">
       <Filter>Source Files\miniaudio\extras\miniaudio_split</Filter>
+    </ClCompile>
+    <ClCompile Include="..\modules\ImGuiFileDialog\ImGuiFileDialog.cpp">
+      <Filter>Source Files\ImGuiFileDialog</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -142,7 +142,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules/imgui;$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,7 +164,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules/imgui;$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -176,6 +176,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\modules\ImGuiFileDialog\dirent\dirent.h" />
+    <ClInclude Include="..\modules\ImGuiFileDialog\ImGuiFileDialog.h" />
+    <ClInclude Include="..\modules\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image.h" />
+    <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image_resize.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Logging.h" />
@@ -186,6 +191,7 @@
     <ClInclude Include="SquadTracker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\modules\ImGuiFileDialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Globals.cpp" />
