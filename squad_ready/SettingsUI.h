@@ -5,5 +5,5 @@ class SettingsUI : public Singleton<SettingsUI> {
  public:
   SettingsUI() = default;
 
-  void Draw() const;
+  static void Draw();
 };

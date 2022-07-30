@@ -10,3 +10,7 @@
 [submodule "miniaudio"]
 	path = modules/miniaudio
 	url = https://github.com/mackron/miniaudio
+[submodule "modules/ImGuiFileDialog"]
+	path = modules/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog
+	branch = Lib_Only
