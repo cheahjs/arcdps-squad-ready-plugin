@@ -25,8 +25,8 @@ void DrawReadyCheck() {
   std::string ready_check_path =
       settings.settings.ready_check_path.value_or("");
   if (ImGui::InputText(
-          "Path to file to play on ready check (blank for default)",
-          &ready_check_path)) {
+      "Path to file to play on ready check (blank for default)",
+      &ready_check_path)) {
     if (ready_check_path.empty()) {
       settings.settings.ready_check_path.reset();
     } else {
@@ -61,7 +61,7 @@ void DrawReadyCheck() {
   ImGui::SameLine();
   if (ImGui::Button("Play Ready Check")) {
     if (AudioPlayer::instance().UpdateReadyCheck(
-            settings.settings.ready_check_path.value_or(""))) {
+        settings.settings.ready_check_path.value_or(""))) {
       AudioPlayer::instance().PlayReadyCheck();
     }
   }
@@ -97,8 +97,8 @@ void DrawSquadReady() {
   std::string squad_ready_path =
       settings.settings.squad_ready_path.value_or("");
   if (ImGui::InputText(
-          "Path to file to play on squad ready (blank for default)",
-          &squad_ready_path)) {
+      "Path to file to play on squad ready (blank for default)",
+      &squad_ready_path)) {
     if (squad_ready_path.empty()) {
       settings.settings.squad_ready_path.reset();
     } else {
@@ -130,7 +130,7 @@ void DrawSquadReady() {
   ImGui::SameLine();
   if (ImGui::Button("Play Squad Ready")) {
     if (AudioPlayer::instance().UpdateSquadReady(
-            settings.settings.squad_ready_path.value_or(""))) {
+        settings.settings.squad_ready_path.value_or(""))) {
       AudioPlayer::instance().PlaySquadReady();
     }
   }
@@ -168,7 +168,7 @@ void DrawStatus() {
 
   ImGui::Text(std::format("Output device: {}",
                           AudioPlayer::instance().OutputDeviceName())
-                  .c_str());
+      .c_str());
   if (ImGui::Button("Reset Audio")) {
     AudioPlayer::instance().ReInit();
   }

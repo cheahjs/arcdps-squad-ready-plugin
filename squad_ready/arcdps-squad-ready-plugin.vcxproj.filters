@@ -37,6 +37,9 @@
     <Filter Include="Source Files\ImGuiFileDialog">
       <UniqueIdentifier>{be5d014e-4fde-436a-952f-a6846b54132b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Scheduler">
+      <UniqueIdentifier>{252ae735-16eb-43fc-b9b9-2a0ce928c9a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logging.h">
@@ -80,6 +83,15 @@
     </ClInclude>
     <ClInclude Include="Error.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\Scheduler\Cron.h">
+      <Filter>Header Files\Scheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\Scheduler\InterruptableSleep.h">
+      <Filter>Header Files\Scheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\modules\Scheduler\Scheduler.h">
+      <Filter>Header Files\Scheduler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
