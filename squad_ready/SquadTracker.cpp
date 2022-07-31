@@ -61,6 +61,8 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
 void SquadTracker::ReadyCheckStarted() {
   logging::Debug("ready check has started");
   in_ready_check_ = true;
+  ready_check_start_time_ =
+      std::chrono::system_clock::now().time_since_epoch().count();
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
 }
@@ -74,6 +76,7 @@ void SquadTracker::ReadyCheckCompleted() const {
 void SquadTracker::ReadyCheckEnded() {
   logging::Debug("ready check has ended");
   in_ready_check_ = false;
+  ready_check_start_time_ = 0;
 }
 
 bool SquadTracker::AllPlayersReadied() {
