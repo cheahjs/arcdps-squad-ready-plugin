@@ -13,12 +13,15 @@ void DrawReadyCheck() {
   Settings& settings = Settings::instance();
 
   ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Ready Check");
+
+  // Volume
   int& ready_check_volume = settings.settings.ready_check_volume;
   if (ImGui::SliderInt("Volume - Ready Check", &ready_check_volume, 0, 100,
                        "%d%%")) {
     AudioPlayer::instance().UpdateReadyCheckVolume(ready_check_volume);
   }
 
+  // Path
   std::string ready_check_path =
       settings.settings.ready_check_path.value_or("");
   if (ImGui::InputText(
@@ -35,6 +38,7 @@ void DrawReadyCheck() {
     }
   }
 
+  // Path - Dialog
   if (ImGui::Button("Open Ready Check File")) {
     ImGuiFileDialog::Instance()->OpenDialog(
         "ChooseReadyCheckFileDlgKey", "Choose Ready Check File", ".*",
@@ -52,6 +56,8 @@ void DrawReadyCheck() {
         settings.settings.ready_check_path.value_or(""));
     ImGuiFileDialog::Instance()->Close();
   }
+
+  // Play button for testing
   ImGui::SameLine();
   if (ImGui::Button("Play Ready Check")) {
     if (AudioPlayer::instance().UpdateReadyCheck(
@@ -60,12 +66,21 @@ void DrawReadyCheck() {
     }
   }
 
+  // Status of file
   const auto ready_check_status = AudioPlayer::instance().ReadyCheckStatus();
   if (!ready_check_status.empty()) {
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
                        ready_check_status.c_str());
   }
+
+  // Nag options
+  bool& nag = settings.settings.ready_check_nag;
+  bool& nag_in_combat = settings.settings.ready_check_nag_in_combat;
+  float& nag_interval = settings.settings.ready_check_nag_interval_seconds;
+  ImGui::Checkbox("Nag if not readied", &nag);
+  ImGui::Checkbox("Nag in combat", &nag_in_combat);
+  ImGui::InputFloat("Nag interval in seconds", &nag_interval, 0.1f, 0, "%.1f");
 }
 
 void DrawSquadReady() {
@@ -160,9 +175,12 @@ void DrawStatus() {
 }
 
 void SettingsUI::Draw() {
+  ImGui::Separator();
   ImGui::Spacing();
   DrawReadyCheck();
 
+  ImGui::Spacing();
+  ImGui::Separator();
   ImGui::Spacing();
   DrawSquadReady();
 
