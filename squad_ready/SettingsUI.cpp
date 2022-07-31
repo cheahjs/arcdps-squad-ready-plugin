@@ -41,7 +41,9 @@ void DrawReadyCheck() {
         settings.settings.ready_check_path.value_or("."), 1, nullptr,
         ImGuiFileDialogFlags_Modal);
   }
-  if (ImGuiFileDialog::Instance()->Display("ChooseReadyCheckFileDlgKey")) {
+  if (ImGuiFileDialog::Instance()->Display("ChooseReadyCheckFileDlgKey",
+                                           0,
+                                           ImVec2(400, 200))) {
     if (ImGuiFileDialog::Instance()->IsOk()) {
       settings.settings.ready_check_path =
           ImGuiFileDialog::Instance()->GetFilePathName();
@@ -99,7 +101,9 @@ void DrawSquadReady() {
         settings.settings.squad_ready_path.value_or("."), 1, nullptr,
         ImGuiFileDialogFlags_Modal);
   }
-  if (ImGuiFileDialog::Instance()->Display("ChooseSquadReadyFileDlgKey")) {
+  if (ImGuiFileDialog::Instance()->Display("ChooseSquadReadyFileDlgKey",
+                                           0,
+                                           ImVec2(400, 200))) {
     if (ImGuiFileDialog::Instance()->IsOk()) {
       settings.settings.squad_ready_path =
           ImGuiFileDialog::Instance()->GetFilePathName();
