@@ -23,3 +23,8 @@ By default, the sounds are English text-to-speech of the phrases "Ready check" a
 To setup custom sounds and volume levels, you can open the arcdps options panel (Alt+Shift+T by default) and adjust the volume levels for each event, and you can also provide a path to a MP3, WAV, or FLAC file to customize the sound.
 
 ![image](https://user-images.githubusercontent.com/818368/169086606-81baff19-d237-412f-b5b9-5ad2efc333cb.png)
+
+## Known Issues
+
+* If you are already in a squad (a pending invite counts as well) when the game is started, this addon will not track existing players until an update occurs (such as moving subgroups, hitting the ready button). This means the ready check and squad ready sounds may or may not play at incorrect times.
+* If there is a pending invite and a ready check occurs, the squad ready sound will not play.
