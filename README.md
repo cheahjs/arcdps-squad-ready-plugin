@@ -10,6 +10,12 @@ https://user-images.githubusercontent.com/818368/169086436-0515382a-b121-43c7-ac
 
 [arcdps](https://www.deltaconnected.com/arcdps/) and the [unofficial extras plugin](https://github.com/Krappa322/arcdps_unofficial_extras_releases) should be installed.
 
+### Guild Wars 2 Unofficial Add-On Manager
+
+The plugin can be installed via the [Guild Wars 2 Unofficial Add-On Manager](https://github.com/gw2-addon-loader/GW2-Addon-Manager).
+
+### Manual
+
 Download the [latest release from the Releases page](https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest).
 
 Place the .dll file into the same folder as arcdps.
