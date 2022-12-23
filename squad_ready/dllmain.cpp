@@ -140,6 +140,9 @@ uintptr_t mod_windows(const char* windowname) {
 }
 
 uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
+  if (squad_tracker) {
+    squad_tracker->Tick();
+  }
   UpdateChecker::instance().Draw(
       globals::update_state, kSquadReadyPluginName,
       "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest");

@@ -21,6 +21,9 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
                     user.JoinTime, user.Subgroup));
     // User added/updated
     if (user.Role != UserRole::None) {
+      if (user_account_name == globals::self_account_name) {
+        self_readied_ = user.ReadyStatus;
+      }
       if (auto old_user_it = cached_players_.find(user_account_name); old_user_it == cached_players_.end()) {
         // User added
         cached_players_.emplace(user_account_name, user);
@@ -49,6 +52,7 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
     else {
       if (user_account_name == globals::self_account_name) {
         // Self left squad, reset cache
+        self_readied_ = false;
         cached_players_.clear();
       } else {
         // Remove player from cache
@@ -58,22 +62,50 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
   }
 }
 
-void SquadTracker::ReadyCheckStarted() {
-  logging::Debug("ready check has started");
-  in_ready_check_ = true;
+void SquadTracker::Tick() {
+  // no active ready check
+  if (!in_ready_check_) return;
+  // self is already readied up
+  if (self_readied_) return;
+  // nag time has not passed
+  if (std::chrono::steady_clock::now() < ready_check_nag_time_) return;
+  // nag time has passed, time to nag
+  ready_check_nag_time_ =
+      std::chrono::steady_clock::now() +
+      std::chrono::milliseconds(static_cast<uint64_t>(
+          1000 *
+          Settings::instance().settings.ready_check_nag_interval_seconds));
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
 }
 
-void SquadTracker::ReadyCheckCompleted() const {
+void SquadTracker::ReadyCheckStarted() {
+  logging::Debug("ready check has started");
+  in_ready_check_ = true;
+  ready_check_start_time_ = std::chrono::steady_clock::now();
+  if (Settings::instance().settings.ready_check_nag) {
+    ready_check_nag_time_ =
+        ready_check_start_time_ +
+        std::chrono::milliseconds(
+            static_cast<uint64_t>(1000 *
+            Settings::instance().settings.ready_check_nag_interval_seconds));
+  }
+  FlashWindow();
+  AudioPlayer::instance().PlayReadyCheck();
+}
+
+void SquadTracker::ReadyCheckCompleted() {
   logging::Debug("squad is ready");
+  ready_check_nag_time_ = {};
   FlashWindow();
   AudioPlayer::instance().PlaySquadReady();
+  ReadyCheckEnded();
 }
 
 void SquadTracker::ReadyCheckEnded() {
   logging::Debug("ready check has ended");
   in_ready_check_ = false;
+  ready_check_start_time_ = {};
 }
 
 bool SquadTracker::AllPlayersReadied() {

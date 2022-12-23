@@ -19,13 +19,19 @@ class Settings final : public Singleton<Settings> {
     int ready_check_volume = 100;
     int squad_ready_volume = 100;
     bool flash_window = true;
+    bool ready_check_nag = false;
+    bool ready_check_nag_in_combat = false;
+    float ready_check_nag_interval_seconds = 5.0f;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE_NON_THROWING(SettingsObject,
                                                 ready_check_path,
                                                 squad_ready_path,
                                                 ready_check_volume,
                                                 squad_ready_volume,
-                                                flash_window)
+                                                flash_window,
+                                                ready_check_nag,
+                                                ready_check_nag_in_combat,
+                                                ready_check_nag_interval_seconds)
   };
 
   Settings() = default;
