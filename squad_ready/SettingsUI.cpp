@@ -76,10 +76,10 @@ void DrawReadyCheck() {
 
   // Nag options
   bool& nag = settings.settings.ready_check_nag;
-  bool& nag_in_combat = settings.settings.ready_check_nag_in_combat;
+  // bool& nag_in_combat = settings.settings.ready_check_nag_in_combat;
   float& nag_interval = settings.settings.ready_check_nag_interval_seconds;
   ImGui::Checkbox("Nag if not readied", &nag);
-  ImGui::Checkbox("Nag in combat", &nag_in_combat);
+  // ImGui::Checkbox("Nag in combat", &nag_in_combat);
   ImGui::InputFloat("Nag interval in seconds", &nag_interval, 0.1f, 0, "%.1f");
 }
 
