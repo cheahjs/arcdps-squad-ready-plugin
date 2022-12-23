@@ -14,9 +14,3 @@
 	path = modules/ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog
 	branch = Lib_Only
-[submodule "modules/Scheduler"]
-	path = modules/Scheduler
-	url = https://github.com/Bosma/Scheduler
-[submodule "modules/CTPL"]
-	path = modules/CTPL
-	url = https://github.com/vit-vit/CTPL

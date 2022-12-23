@@ -5,17 +5,15 @@
 
 #include "Audio.h"
 #include "unofficial_extras/Definitions.h"
-#include "Scheduler/Scheduler.h"
 
 class SquadTracker {
   std::map<std::string, UserInfo> cached_players_;
   std::mutex cached_players_mutex_;
   uint64_t ready_check_start_time_;
   bool in_ready_check_;
-  Bosma::Scheduler scheduler_;
 
  public:
-  SquadTracker() : in_ready_check_(false), scheduler_(1) {}
+  SquadTracker() : in_ready_check_(false) {}
   void UpdateUsers(const UserInfo* updated_users, size_t updated_users_count);
 
  private:

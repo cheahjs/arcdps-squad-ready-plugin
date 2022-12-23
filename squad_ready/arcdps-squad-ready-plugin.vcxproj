@@ -142,7 +142,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)modules/CTPL;$(SolutionDir)modules/imgui;$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules/imgui;$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,7 +164,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)modules/CTPL;$(SolutionDir)modules/imgui;$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules/imgui;$(SolutionDir)modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -181,9 +181,6 @@
     <ClInclude Include="..\modules\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image.h" />
     <ClInclude Include="..\modules\ImGuiFileDialog\stb\stb_image_resize.h" />
-    <ClInclude Include="..\modules\Scheduler\Cron.h" />
-    <ClInclude Include="..\modules\Scheduler\InterruptableSleep.h" />
-    <ClInclude Include="..\modules\Scheduler\Scheduler.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="Globals.h" />
