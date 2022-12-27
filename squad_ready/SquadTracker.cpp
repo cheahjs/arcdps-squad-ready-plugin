@@ -54,6 +54,7 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
         // Self left squad, reset cache
         self_readied_ = false;
         cached_players_.clear();
+        ReadyCheckEnded();
       } else {
         // Remove player from cache
         cached_players_.erase(user_account_name);
