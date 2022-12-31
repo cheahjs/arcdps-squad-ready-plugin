@@ -149,7 +149,7 @@ void DrawGlobalSettings() {
   ImGui::Checkbox("Flash window and tray icon", &flash_window);
 }
 
-void DrawStatus() {
+void DrawStatus(std::unique_ptr<SquadTracker>& tracker) {
   ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Status");
 
   ImGui::BeginGroup();
@@ -172,9 +172,12 @@ void DrawStatus() {
   if (ImGui::Button("Reset Audio")) {
     AudioPlayer::instance().ReInit();
   }
+  if (ImGui::Button("Open Debug Window")) {
+    tracker->MakeDebugWindowVisible();
+  }
 }
 
-void SettingsUI::Draw() {
+void SettingsUI::Draw(std::unique_ptr<SquadTracker>& tracker) {
   ImGui::Separator();
   ImGui::Spacing();
   DrawReadyCheck();
@@ -192,5 +195,5 @@ void SettingsUI::Draw() {
   ImGui::Spacing();
   ImGui::Separator();
   ImGui::Spacing();
-  DrawStatus();
+  DrawStatus(tracker);
 }

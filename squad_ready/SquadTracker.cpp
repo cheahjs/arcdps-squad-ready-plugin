@@ -7,7 +7,8 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
                                const size_t updated_users_count) {
   std::scoped_lock guard(cached_players_mutex_);
   logging::Debug(
-      std::format("received squad callback with {} users", updated_users_count));
+      std::format("received squad callback with {} users",
+                  updated_users_count));
   for (size_t i = 0; i < updated_users_count; i++) {
     const auto user = updated_users[i];
     auto user_account_name = std::string(user.AccountName);
@@ -17,14 +18,16 @@ void SquadTracker::UpdateUsers(const UserInfo* updated_users,
     logging::Debug(
         std::format("updated user {} accountname: {} ready: {} role: {} "
                     "jointime: {} subgroup: {}",
-                    i, user.AccountName, user.ReadyStatus, static_cast<uint8_t>(user.Role),
+                    i, user.AccountName, user.ReadyStatus,
+                    static_cast<uint8_t>(user.Role),
                     user.JoinTime, user.Subgroup));
     // User added/updated
     if (user.Role != UserRole::None) {
       if (user_account_name == globals::self_account_name) {
         self_readied_ = user.ReadyStatus;
       }
-      if (auto old_user_it = cached_players_.find(user_account_name); old_user_it == cached_players_.end()) {
+      if (auto old_user_it = cached_players_.find(user_account_name);
+        old_user_it == cached_players_.end()) {
         // User added
         cached_players_.emplace(user_account_name, user);
       } else {
@@ -74,10 +77,70 @@ void SquadTracker::Tick() {
   ready_check_nag_time_ =
       std::chrono::steady_clock::now() +
       std::chrono::milliseconds(static_cast<uint64_t>(
-          1000 *
-          Settings::instance().settings.ready_check_nag_interval_seconds));
+        1000 *
+        Settings::instance().settings.ready_check_nag_interval_seconds));
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
+}
+
+void SquadTracker::Draw() {
+  if (!debug_window_visible_) {
+    return;
+  }
+
+  ImGuiWindowFlags imGuiWindowFlags =
+      ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing |
+      ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoNavFocus |
+      ImGuiWindowFlags_AlwaysAutoResize;
+
+  ImGui::Begin("Squad Ready Debug", &debug_window_visible_, imGuiWindowFlags);
+  ImGui::TextUnformatted("Squad Members");
+  ImGui::Separator();
+  std::scoped_lock guard(cached_players_mutex_);
+  for (auto& pair : cached_players_) {
+    ImGui::TextUnformatted(std::format(
+        "{} | role: {} | sub: {} | ", pair.first,
+                                       static_cast<uint8_t>(pair.second.Role),
+                                       pair.second.Subgroup+1)
+                               .c_str());
+    ImGui::SameLine();
+    if (pair.second.ReadyStatus) {
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Ready");
+    } else {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Not Ready");
+    }
+  }
+
+  ImGui::Separator();
+  ImGui::TextUnformatted("Internal Variables");
+  ImGui::Separator();
+
+  if (in_ready_check_) {
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "in_ready_check_");
+  } else {
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "in_ready_check_");
+  }
+
+  if (self_readied_) {
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "self_readied_");
+  } else {
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "self_readied_");
+  }
+
+  ImGui::TextUnformatted(
+      std::format("{} ready_check_start_time_",
+                  ready_check_start_time_.time_since_epoch().count())
+      .c_str());
+  ImGui::TextUnformatted(
+      std::format("{} ready_check_nag_time_",
+                  ready_check_nag_time_.time_since_epoch().count())
+      .c_str());
+  ImGui::TextUnformatted(
+      std::format("{} current_time",
+                  std::chrono::steady_clock::now().time_since_epoch().count())
+      .c_str());
+
+  ImGui::End();
 }
 
 void SquadTracker::ReadyCheckStarted() {
@@ -89,7 +152,8 @@ void SquadTracker::ReadyCheckStarted() {
         ready_check_start_time_ +
         std::chrono::milliseconds(
             static_cast<uint64_t>(1000 *
-            Settings::instance().settings.ready_check_nag_interval_seconds));
+                                  Settings::instance().settings.
+                                  ready_check_nag_interval_seconds));
   }
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
@@ -137,6 +201,6 @@ void SquadTracker::FlashWindow() {
     return;
   }
   FLASHWINFO flash_info{sizeof(flash_info), wnd,
-                       FLASHW_ALL | FLASHW_TIMERNOFG, 100, 0};
+                        FLASHW_ALL | FLASHW_TIMERNOFG, 100, 0};
   FlashWindowEx(&flash_info);
 }
