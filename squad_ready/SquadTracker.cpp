@@ -96,20 +96,35 @@ void SquadTracker::Draw() {
   ImGui::Begin("Squad Ready Debug", &debug_window_visible_, imGuiWindowFlags);
   ImGui::TextUnformatted("Squad Members");
   ImGui::Separator();
-  std::scoped_lock guard(cached_players_mutex_);
-  for (auto& pair : cached_players_) {
-    ImGui::TextUnformatted(std::format(
-        "{} | role: {} | sub: {} | ", pair.first,
-                                       static_cast<uint8_t>(pair.second.Role),
-                                       pair.second.Subgroup+1)
-                               .c_str());
-    ImGui::SameLine();
-    if (pair.second.ReadyStatus) {
-      ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Ready");
-    } else {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Not Ready");
+
+  ImGui::BeginTable("readydebug", 4);
+  ImGui::TableSetupColumn("Account");
+  ImGui::TableSetupColumn("Role");
+  ImGui::TableSetupColumn("Sub");
+  ImGui::TableSetupColumn("Ready");
+  ImGui::TableHeadersRow();
+
+  {
+    std::scoped_lock guard(cached_players_mutex_);
+    for (auto& [account_name, user_info] : cached_players_) {
+      ImGui::TableNextRow();
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(account_name.c_str());
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(
+          std::format("{}", static_cast<uint8_t>(user_info.Role)).c_str());
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(std::format("{}", user_info.Subgroup + 1).c_str());
+      ImGui::TableNextColumn();
+      if (user_info.ReadyStatus) {
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Ready");
+      } else {
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Not Ready");
+      }
     }
   }
+
+  ImGui::EndTable();
 
   ImGui::Separator();
   ImGui::TextUnformatted("Internal Variables");
