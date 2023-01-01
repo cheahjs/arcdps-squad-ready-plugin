@@ -22,13 +22,6 @@ bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check
     logging::Squad("Failed to initialize audio engine");
     return false;
   }
-  const auto device = ma_engine_get_device(engine_.get());
-  ma_device_info device_info;
-  if (ma_device_get_info(device, ma_device_type_playback, &device_info) == MA_SUCCESS) {
-    output_device_name_ = std::string(device_info.name);
-  } else {
-    output_device_name_ = "Unknown";
-  }
 
   if (!UpdateReadyCheck(ready_check_path)) {
     logging::Squad(std::format("Failed to load ready check audio from {}: {}",
@@ -107,7 +100,9 @@ std::string AudioPlayer::ReadyCheckStatus() { return ready_check_status_; }
 
 std::string AudioPlayer::SquadReadyStatus() { return squad_ready_status_; }
 
-std::string AudioPlayer::OutputDeviceName() { return output_device_name_; }
+std::string AudioPlayer::OutputDeviceName() {
+  return ma_engine_get_device(engine_.get())->playback.name;
+}
 
 void AudioPlayer::Destroy() {
   ready_check_sound_.reset();

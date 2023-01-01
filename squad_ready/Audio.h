@@ -59,5 +59,4 @@ private:
   std::unique_ptr<ma_engine> engine_;
   std::string ready_check_status_;
   std::string squad_ready_status_;
-  std::string output_device_name_;
 };
