@@ -128,7 +128,7 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 uintptr_t mod_options() {
-  SettingsUI::instance().Draw();
+  SettingsUI::instance().Draw(squad_tracker);
 
   return 0;
 }
@@ -142,6 +142,7 @@ uintptr_t mod_windows(const char* windowname) {
 uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
   if (squad_tracker) {
     squad_tracker->Tick();
+    squad_tracker->Draw();
   }
   UpdateChecker::instance().Draw(
       globals::update_state, kSquadReadyPluginName,

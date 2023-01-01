@@ -13,13 +13,21 @@ class SquadTracker {
   std::chrono::time_point<std::chrono::steady_clock> ready_check_nag_time_;
   bool in_ready_check_;
   bool self_readied_;
+  bool debug_window_visible_;
 
  public:
-  SquadTracker() : in_ready_check_(false), self_readied_(false) {}
+  SquadTracker()
+      : in_ready_check_(false),
+        self_readied_(false),
+        debug_window_visible_(false)
+  {}
   void UpdateUsers(const UserInfo* updated_users, size_t updated_users_count);
   void Tick();
+  void Draw();
 
- private:
+  void MakeDebugWindowVisible() { debug_window_visible_ = true; }
+
+private:
   void ReadyCheckStarted();
   void ReadyCheckCompleted();
   void ReadyCheckEnded();
