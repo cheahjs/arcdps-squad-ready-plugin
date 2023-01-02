@@ -71,14 +71,12 @@ void SquadTracker::Tick() {
   if (!in_ready_check_) return;
   // self is already readied up
   if (self_readied_) return;
+  // nag is disabled
+  if (!Settings::instance().settings.ready_check_nag) return;
   // nag time has not passed
   if (std::chrono::steady_clock::now() < ready_check_nag_time_) return;
   // nag time has passed, time to nag
-  ready_check_nag_time_ =
-      std::chrono::steady_clock::now() +
-      std::chrono::milliseconds(static_cast<uint64_t>(
-        1000 *
-        Settings::instance().settings.ready_check_nag_interval_seconds));
+  SetReadyCheckNagTime();
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
 }
@@ -200,6 +198,16 @@ void SquadTracker::ReadyCheckEnded() {
   logging::Debug("ready check has ended");
   in_ready_check_ = false;
   ready_check_start_time_ = {};
+}
+
+void SquadTracker::SetReadyCheckNagTime() {
+  if (Settings::instance().settings.ready_check_nag) {
+    ready_check_nag_time_ =
+        std::chrono::steady_clock::now() +
+        std::chrono::milliseconds(static_cast<uint64_t>(
+            1000 *
+            Settings::instance().settings.ready_check_nag_interval_seconds));
+  }
 }
 
 bool SquadTracker::AllPlayersReadied() {

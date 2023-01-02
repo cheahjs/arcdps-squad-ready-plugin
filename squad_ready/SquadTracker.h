@@ -31,6 +31,7 @@ private:
   void ReadyCheckStarted();
   void ReadyCheckCompleted();
   void ReadyCheckEnded();
+  void SetReadyCheckNagTime();
   bool AllPlayersReadied();
   static void FlashWindow();
 };
