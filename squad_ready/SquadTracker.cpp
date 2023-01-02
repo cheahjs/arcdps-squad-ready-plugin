@@ -71,14 +71,12 @@ void SquadTracker::Tick() {
   if (!in_ready_check_) return;
   // self is already readied up
   if (self_readied_) return;
+  // nag is disabled
+  if (!Settings::instance().settings.ready_check_nag) return;
   // nag time has not passed
   if (std::chrono::steady_clock::now() < ready_check_nag_time_) return;
   // nag time has passed, time to nag
-  ready_check_nag_time_ =
-      std::chrono::steady_clock::now() +
-      std::chrono::milliseconds(static_cast<uint64_t>(
-        1000 *
-        Settings::instance().settings.ready_check_nag_interval_seconds));
+  SetReadyCheckNagTime();
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
 }
@@ -94,8 +92,7 @@ void SquadTracker::Draw() {
       ImGuiWindowFlags_AlwaysAutoResize;
 
   ImGui::Begin("Squad Ready Debug", &debug_window_visible_, imGuiWindowFlags);
-  ImGui::TextUnformatted("Squad Members");
-  ImGui::Separator();
+  ImGui::TextDisabled("Squad Members");
 
   ImGui::BeginTable("readydebug", 4);
   ImGui::TableSetupColumn("Account");
@@ -127,8 +124,7 @@ void SquadTracker::Draw() {
   ImGui::EndTable();
 
   ImGui::Separator();
-  ImGui::TextUnformatted("Internal Variables");
-  ImGui::Separator();
+  ImGui::TextDisabled("Internal Variables");
 
   if (in_ready_check_) {
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "in_ready_check_");
@@ -155,6 +151,29 @@ void SquadTracker::Draw() {
                   std::chrono::steady_clock::now().time_since_epoch().count())
       .c_str());
 
+  ImGui::Separator();
+  ImGui::TextDisabled("Settings");
+
+  if (Settings::instance().settings.ready_check_nag) {
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "ready_check_nag");
+  } else {
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ready_check_nag");
+  }
+
+  if (Settings::instance().settings.ready_check_nag_in_combat) {
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
+                       "ready_check_nag_in_combat");
+  } else {
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                       "ready_check_nag_in_combat");
+  }
+
+  ImGui::TextUnformatted(
+      std::format("{} ready_check_nag_interval_seconds",
+                  Settings::instance().settings.
+                                       ready_check_nag_interval_seconds)
+      .c_str());
+
   ImGui::End();
 }
 
@@ -162,14 +181,7 @@ void SquadTracker::ReadyCheckStarted() {
   logging::Debug("ready check has started");
   in_ready_check_ = true;
   ready_check_start_time_ = std::chrono::steady_clock::now();
-  if (Settings::instance().settings.ready_check_nag) {
-    ready_check_nag_time_ =
-        ready_check_start_time_ +
-        std::chrono::milliseconds(
-            static_cast<uint64_t>(1000 *
-                                  Settings::instance().settings.
-                                  ready_check_nag_interval_seconds));
-  }
+  SetReadyCheckNagTime();
   FlashWindow();
   AudioPlayer::instance().PlayReadyCheck();
 }
@@ -186,6 +198,16 @@ void SquadTracker::ReadyCheckEnded() {
   logging::Debug("ready check has ended");
   in_ready_check_ = false;
   ready_check_start_time_ = {};
+}
+
+void SquadTracker::SetReadyCheckNagTime() {
+  if (Settings::instance().settings.ready_check_nag) {
+    ready_check_nag_time_ =
+        std::chrono::steady_clock::now() +
+        std::chrono::milliseconds(static_cast<uint64_t>(
+            1000 *
+            Settings::instance().settings.ready_check_nag_interval_seconds));
+  }
 }
 
 bool SquadTracker::AllPlayersReadied() {
