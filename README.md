@@ -28,7 +28,9 @@ By default, the sounds are English text-to-speech of the phrases "Ready check" a
 
 To setup custom sounds and volume levels, you can open the arcdps options panel (Alt+Shift+T by default) and adjust the volume levels for each event, and you can also provide a path to a MP3, WAV, or FLAC file to customize the sound.
 
-![image](https://user-images.githubusercontent.com/818368/169086606-81baff19-d237-412f-b5b9-5ad2efc333cb.png)
+The plugin can be set to "nag" with the ready check started sound on an interval if you are not readied up.
+
+![screenshot of options](https://user-images.githubusercontent.com/818368/212587541-5edc2557-16ca-44ef-9b9f-05d493b63cac.png)
 
 ## Known Issues
 
