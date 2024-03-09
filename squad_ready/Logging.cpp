@@ -2,49 +2,56 @@
 
 void logging::File(const char* str) {
   if (ARC_LOG_FILE) ARC_LOG_FILE(str);
-  return;
 }
 
 /* log to extensions tab in arcdps log window, thread/async safe */
 void logging::Arc(const char* str) {
   if (ARC_LOG) ARC_LOG(str);
-  return;
 }
 
 void logging::Squad(char* str) {
 #if _DEBUG
-  logging::Arc(std::format("squad_ready: {}", str).c_str());
+  Arc(std::format("squad_ready: {}", str).c_str());
 #endif
-  logging::File(std::format("squad_ready: {}", str).c_str());
-  return;
+  File(std::format("squad_ready: {}", str).c_str());
 }
 
 void logging::Squad(const char* str) {
-  logging::Squad(const_cast<char*>(str));
-  return;
+  Squad(const_cast<char*>(str));
 }
 
 void logging::Squad(std::string str) {
-  logging::Squad(const_cast<char*>(str.c_str()));
-  return;
+  Squad(const_cast<char*>(str.c_str()));
+}
+
+void logging::MiniAudioError(ma_result result, char* str) {
+  if (result != MA_SUCCESS) {
+    Squad(std::format("MiniAudio error: {} ({})", str, ma_result_description(result)).c_str());
+  }
+}
+
+void logging::MiniAudioError(ma_result result, const char* str) {
+  MiniAudioError(result, const_cast<char*>(str));
+}
+
+void logging::MiniAudioError(ma_result result, std::string str) {
+  MiniAudioError(result, const_cast<char*>(str.c_str()));
 }
 
 void logging::Debug(char* str) {
 #if _DEBUG
-  logging::Squad(std::format("DEBUG: {}", str).c_str());
+  Squad(std::format("DEBUG: {}", str).c_str());
 #endif
-  return;
 }
 
 void logging::Debug(const char* str) {
 #if _DEBUG
-  logging::Debug(const_cast<char*>(str));
-#endif return;
+  Debug(const_cast<char*>(str));
+#endif
 }
 
 void logging::Debug(const std::string& str) {
 #if _DEBUG
-  logging::Debug(const_cast<char*>(str.c_str()));
+  Debug(const_cast<char*>(str.c_str()));
 #endif
-  return;
 }

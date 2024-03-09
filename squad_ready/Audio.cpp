@@ -18,8 +18,8 @@ bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check
   squad_ready_path_ = squad_ready_path;
 
   engine_ = std::make_unique<ma_engine>();
-  if (ma_engine_init(nullptr, engine_.get()) != MA_SUCCESS) {
-    logging::Squad("Failed to initialize audio engine");
+  if (const auto result = ma_engine_init(nullptr, engine_.get()); result != MA_SUCCESS) {
+    logging::MiniAudioError(result, "Failed to initialize audio engine");
     return false;
   }
 
@@ -142,6 +142,8 @@ WaveFile::WaveFile(const std::string& file_name, ma_engine* engine) {
                               nullptr, nullptr, sound_.get());
   if (result != MA_SUCCESS) {
     error_message_ = std::format("Failed to load: {}", error::humanize_ma_result(result));
+    logging::MiniAudioError(result,
+                            std::format("Failed to load {}", file_name));
     return;
   }
 
@@ -173,6 +175,7 @@ WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
       ma_decoder_init_memory(buffer_, resource_size, nullptr, decoder_.get());
   if (decode_result != MA_SUCCESS) {
     error_message_ = std::format("Internal error, failed to init decoder: {}", error::humanize_ma_result(decode_result));
+    logging::MiniAudioError(decode_result, "Failed to init decoder");
     return;
   }
 
@@ -181,6 +184,7 @@ WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
   if (sound_init_result != MA_SUCCESS) {
     error_message_ = std::format("Internal error, failed to init sound: {}",
                                  error::humanize_ma_result(sound_init_result));
+    logging::MiniAudioError(sound_init_result, "Failed to init sound");
     return;
   }
 
@@ -191,11 +195,13 @@ WaveFile::~WaveFile() {
   logging::Debug("destroying wave file");
   valid_ = false;
   if (sound_) {
-    ma_sound_stop(sound_.get());
+    logging::Debug("stopping sound");
+    logging::MiniAudioError(ma_sound_stop(sound_.get()), "Failed to stop sound");
     ma_sound_uninit(sound_.get());
   }
   if (decoder_) {
-    ma_decoder_uninit(decoder_.get());
+    logging::Debug("uniniting decoder");
+    logging::MiniAudioError(ma_decoder_uninit(decoder_.get()), "Failed to uninit decoder");
   }
   delete[] buffer_;
 }
@@ -208,8 +214,9 @@ void WaveFile::Play() const {
   if (const auto engine = ma_sound_get_engine(sound_.get()); !engine) {
     return;
   }
-  if (ma_sound_start(sound_.get()) != MA_SUCCESS) {
+  if (const auto result = ma_sound_start(sound_.get()); result != MA_SUCCESS) {
     logging::Debug("failed to play wave file");
+    logging::MiniAudioError(result, "Failed to play sound");
   }
 }
 

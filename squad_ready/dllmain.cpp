@@ -217,8 +217,7 @@ arcdps_exports* mod_init() {
 
 /* release mod -- return ignored */
 uintptr_t mod_release() {
-  FreeConsole();
-
+  logging::Debug("shutdown called");
   if (globals::update_state) {
     globals::update_state->FinishPendingTasks();
     globals::update_state.reset(nullptr);
