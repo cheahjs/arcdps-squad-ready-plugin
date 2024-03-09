@@ -137,11 +137,12 @@ WaveFile::WaveFile(const std::string& file_name, ma_engine* engine) {
   sound_ = std::make_unique<ma_sound>();
   decoder_ = nullptr;
 
-  const auto result =
-      ma_sound_init_from_file(engine, file_name.c_str(), MA_SOUND_FLAG_DECODE,
-                              nullptr, nullptr, sound_.get());
-  if (result != MA_SUCCESS) {
-    error_message_ = std::format("Failed to load: {}", error::humanize_ma_result(result));
+  if (const auto result = ma_sound_init_from_file(engine, file_name.c_str(),
+                                                  MA_SOUND_FLAG_DECODE, nullptr,
+                                                  nullptr, sound_.get());
+      result != MA_SUCCESS) {
+    error_message_ =
+        std::format("Failed to load: {}", error::humanize_ma_result(result));
     logging::MiniAudioError(result,
                             std::format("Failed to load {}", file_name));
     return;
@@ -156,7 +157,8 @@ WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
   sound_ = std::make_unique<ma_sound>();
   decoder_ = std::make_unique<ma_decoder>();
 
-  const auto resource_info = FindResource(globals::self_dll, resource, TEXT("WAVE"));
+  const auto resource_info =
+      FindResource(globals::self_dll, resource, TEXT("WAVE"));
   if (resource_info == nullptr) return;
 
   const auto loaded_resource = LoadResource(globals::self_dll, resource_info);
@@ -171,17 +173,18 @@ WaveFile::WaveFile(LPWSTR resource, ma_engine* engine) {
   buffer_ = new char[resource_size];
   memcpy(buffer_, resource_pointer, resource_size);
 
-  const auto decode_result =
-      ma_decoder_init_memory(buffer_, resource_size, nullptr, decoder_.get());
-  if (decode_result != MA_SUCCESS) {
-    error_message_ = std::format("Internal error, failed to init decoder: {}", error::humanize_ma_result(decode_result));
+  if (const auto decode_result = ma_decoder_init_memory(
+          buffer_, resource_size, nullptr, decoder_.get());
+      decode_result != MA_SUCCESS) {
+    error_message_ = std::format("Internal error, failed to init decoder: {}",
+                                 error::humanize_ma_result(decode_result));
     logging::MiniAudioError(decode_result, "Failed to init decoder");
     return;
   }
 
-  const auto sound_init_result = ma_sound_init_from_data_source(
-      engine, decoder_.get(), MA_SOUND_FLAG_DECODE, nullptr, sound_.get());
-  if (sound_init_result != MA_SUCCESS) {
+  if (const auto sound_init_result = ma_sound_init_from_data_source(
+          engine, decoder_.get(), MA_SOUND_FLAG_DECODE, nullptr, sound_.get());
+      sound_init_result != MA_SUCCESS) {
     error_message_ = std::format("Internal error, failed to init sound: {}",
                                  error::humanize_ma_result(sound_init_result));
     logging::MiniAudioError(sound_init_result, "Failed to init sound");

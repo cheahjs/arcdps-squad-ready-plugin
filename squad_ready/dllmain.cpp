@@ -55,8 +55,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
     case DLL_PROCESS_DETACH:
       dll_exit();
       break;
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
     default:
       break;
   }
@@ -218,7 +216,7 @@ arcdps_exports* mod_init() {
 
 /* release mod -- return ignored */
 uintptr_t mod_release() {
-  logging::Debug("shutdown called");
+  logging::Squad("Shutting down");
   if (globals::update_state) {
     globals::update_state->FinishPendingTasks();
     globals::update_state.reset(nullptr);
@@ -229,7 +227,7 @@ uintptr_t mod_release() {
   g_singletonManagerInstance.Shutdown();
 
   squad_tracker.reset();
-
+  logging::Squad("Shutdown complete");
   return 0;
 }
 
