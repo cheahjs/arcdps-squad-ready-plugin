@@ -40,11 +40,10 @@ bool init_failed = false;
 /* dll attach -- from winapi */
 void dll_init(HMODULE hModule) {
   globals::self_dll = hModule;
-  return;
 }
 
 /* dll detach -- from winapi */
-void dll_exit() { return; }
+void dll_exit() { }
 
 /* dll main -- winapi */
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
@@ -56,10 +55,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
     case DLL_PROCESS_DETACH:
       dll_exit();
       break;
-
     case DLL_THREAD_ATTACH:
-      break;
     case DLL_THREAD_DETACH:
+    default:
       break;
   }
   return 1;
@@ -128,7 +126,7 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 uintptr_t mod_options() {
-  SettingsUI::instance().Draw(squad_tracker);
+  SettingsUI::instance([](auto i) { i.Draw(squad_tracker); });
 
   return 0;
 }
@@ -144,9 +142,11 @@ uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
     squad_tracker->Tick();
     squad_tracker->Draw();
   }
-  UpdateChecker::instance().Draw(
-      globals::update_state, kSquadReadyPluginName,
-      "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest");
+  UpdateChecker::instance([](auto i) {
+    i.Draw(
+        globals::update_state, kSquadReadyPluginName,
+        "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest");
+  });
 
   return 0;
 }
@@ -169,9 +169,10 @@ arcdps_exports* mod_init() {
               globals::self_dll, current_version.value(),
               "cheahjs/arcdps-squad-ready-plugin", false));
     }
-
-    Settings::instance().load();
-    AudioPlayer::instance().Init(
+    SettingsUI::instance(std::make_unique<SettingsUI>());
+    Settings::instance(std::make_unique<Settings>()).load();
+    AudioPlayer::instance(std::make_unique<AudioPlayer>())
+        .Init(
         Settings::instance().settings.ready_check_path.value_or(""),
         Settings::instance().settings.ready_check_volume,
         Settings::instance().settings.squad_ready_path.value_or(""),
@@ -223,9 +224,11 @@ uintptr_t mod_release() {
     globals::update_state.reset(nullptr);
   }
 
-  Settings::instance().unload();
+  Settings::instance([](Settings& i) { i.unload(); });
 
   g_singletonManagerInstance.Shutdown();
+
+  squad_tracker.reset();
 
   return 0;
 }
