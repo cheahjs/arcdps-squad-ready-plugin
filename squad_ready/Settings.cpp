@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "Logging.h"
+
 void Settings::load() {
   // according to standard, this constructor is completely thread-safe
   // read settings from file
@@ -12,7 +14,8 @@ void Settings::unload() {
   try {
     SaveToFile();
   } catch (const std::exception& e) {
-    // Some exception happened, i cannot do anything against it here :(
+    logging::Squad("Failed to save settings");
+    logging::Squad(e.what());
   }
 }
 
@@ -25,6 +28,9 @@ void Settings::SaveToFile() {
 
   // save json to file
   json_file << json;
+
+  // close file
+  json_file.close();
 }
 
 void Settings::ReadFromFile() {
@@ -36,6 +42,9 @@ void Settings::ReadFromFile() {
       // push stream into json object (this also parses it)
       json_file >> json;
 
+      // close file
+      json_file.close();
+
       // get the object into the settings object
       json.get_to(settings);
 
@@ -44,6 +53,8 @@ void Settings::ReadFromFile() {
        */
     }
   } catch (const std::exception& e) {
-    // some exception was thrown, all settings are reset!
+    logging::Squad(
+        "Failed to read settings, all settings have been reset to default");
+    logging::Squad(e.what());
   }
 }
