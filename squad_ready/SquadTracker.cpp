@@ -71,14 +71,16 @@ void SquadTracker::Tick() {
   if (!in_ready_check_) return;
   // self is already readied up
   if (self_readied_) return;
-  // nag is disabled
-  if (!Settings::instance().settings.ready_check_nag) return;
-  // nag time has not passed
-  if (std::chrono::steady_clock::now() < ready_check_nag_time_) return;
-  // nag time has passed, time to nag
-  SetReadyCheckNagTime();
-  FlashWindow();
-  AudioPlayer::instance().PlayReadyCheck();
+  Settings::instance([this](const Settings& s) {
+    // nag is disabled
+    if (!s.settings.ready_check_nag) return;
+    // nag time has not passed
+    if (std::chrono::steady_clock::now() < ready_check_nag_time_) return;
+    // nag time has passed, time to nag
+    SetReadyCheckNagTime();
+    FlashWindow();
+    AudioPlayer::instance([](const AudioPlayer& i) { i.PlayReadyCheck(); });
+  });
 }
 
 void SquadTracker::Draw() {
@@ -154,25 +156,27 @@ void SquadTracker::Draw() {
   ImGui::Separator();
   ImGui::TextDisabled("Settings");
 
-  if (Settings::instance().settings.ready_check_nag) {
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "ready_check_nag");
-  } else {
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ready_check_nag");
-  }
+  Settings::instance([this](const Settings& s) {
+    if (s.settings.ready_check_nag) {
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "ready_check_nag");
+    } else {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ready_check_nag");
+    }
 
-  if (Settings::instance().settings.ready_check_nag_in_combat) {
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
-                       "ready_check_nag_in_combat");
-  } else {
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
-                       "ready_check_nag_in_combat");
-  }
+    if (s.settings.ready_check_nag_in_combat) {
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
+                         "ready_check_nag_in_combat");
+    } else {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                         "ready_check_nag_in_combat");
+    }
 
-  ImGui::TextUnformatted(
-      std::format("{} ready_check_nag_interval_seconds",
-                  Settings::instance().settings.
-                                       ready_check_nag_interval_seconds)
-      .c_str());
+    ImGui::TextUnformatted(
+        std::format(
+            "{} ready_check_nag_interval_seconds",
+            s.settings.ready_check_nag_interval_seconds)
+            .c_str());
+  });
 
   ImGui::End();
 }
@@ -183,14 +187,14 @@ void SquadTracker::ReadyCheckStarted() {
   ready_check_start_time_ = std::chrono::steady_clock::now();
   SetReadyCheckNagTime();
   FlashWindow();
-  AudioPlayer::instance().PlayReadyCheck();
+  AudioPlayer::instance([](const AudioPlayer& i) { i.PlayReadyCheck(); });
 }
 
 void SquadTracker::ReadyCheckCompleted() {
   logging::Debug("squad is ready");
   ready_check_nag_time_ = {};
   FlashWindow();
-  AudioPlayer::instance().PlaySquadReady();
+  AudioPlayer::instance([](const AudioPlayer& i) { i.PlaySquadReady(); });
   ReadyCheckEnded();
 }
 
@@ -201,13 +205,13 @@ void SquadTracker::ReadyCheckEnded() {
 }
 
 void SquadTracker::SetReadyCheckNagTime() {
-  if (Settings::instance().settings.ready_check_nag) {
+  Settings::instance([this](const Settings& s) {
     ready_check_nag_time_ =
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(static_cast<uint64_t>(
             1000 *
-            Settings::instance().settings.ready_check_nag_interval_seconds));
-  }
+            s.settings.ready_check_nag_interval_seconds));
+  });
 }
 
 bool SquadTracker::AllPlayersReadied() {
@@ -230,14 +234,14 @@ bool SquadTracker::AllPlayersReadied() {
 }
 
 void SquadTracker::FlashWindow() {
-  if (!Settings::instance().settings.flash_window) {
-    return;
-  }
-  const auto wnd = globals::some_window;
-  if (wnd == nullptr) {
-    return;
-  }
-  FLASHWINFO flash_info{sizeof(flash_info), wnd,
-                        FLASHW_ALL | FLASHW_TIMERNOFG, 100, 0};
-  FlashWindowEx(&flash_info);
+  Settings::instance([](const Settings& s) {
+    if (!s.settings.flash_window) return;
+    const auto wnd = globals::some_window;
+    if (wnd == nullptr) {
+      return;
+    }
+    FLASHWINFO flash_info{sizeof(flash_info), wnd,
+                          FLASHW_ALL | FLASHW_TIMERNOFG, 100, 0};
+    FlashWindowEx(&flash_info);
+  });
 }

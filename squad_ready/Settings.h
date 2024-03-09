@@ -10,7 +10,7 @@
 
 const std::string kSettingsJsonPath = "addons\\arcdps\\arcdps_squad_ready.json";
 
-class Settings final : public Singleton<Settings> {
+class Settings final : public Singleton<Settings, false> {
  public:
   struct SettingsObject {
     uint32_t version = 1;

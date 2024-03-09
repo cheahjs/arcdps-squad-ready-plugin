@@ -29,7 +29,7 @@ class WaveFile {
   bool valid_;
 };
 
-class AudioPlayer final : public Singleton<AudioPlayer> {
+class AudioPlayer final : public Singleton<AudioPlayer, false> {
  public:
   AudioPlayer() = default;
   ~AudioPlayer() override;
