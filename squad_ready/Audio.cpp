@@ -109,6 +109,7 @@ void AudioPlayer::Destroy() {
   squad_ready_sound_.reset();
   if (engine_) {
     ma_engine_uninit(engine_.get());
+    engine_.reset();
   }
 }
 

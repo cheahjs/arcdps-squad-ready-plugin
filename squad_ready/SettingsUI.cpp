@@ -122,43 +122,43 @@ void DrawSquadReady() {
               settings.settings.squad_ready_path.value_or(""));
         });
       }
+    }
 
-      if (ImGui::Button("Open Squad Ready File")) {
-        ImGuiFileDialog::Instance()->OpenDialog(
-            "ChooseSquadReadyFileDlgKey", "Choose Squad Ready File", ".*",
-            settings.settings.squad_ready_path.value_or("."), 1, nullptr,
-            ImGuiFileDialogFlags_Modal);
-      }
-      if (ImGuiFileDialog::Instance()->Display("ChooseSquadReadyFileDlgKey", 0,
-                                               ImVec2(400, 200))) {
-        if (ImGuiFileDialog::Instance()->IsOk()) {
-          settings.settings.squad_ready_path =
-              ImGuiFileDialog::Instance()->GetFilePathName();
-        }
-        AudioPlayer::instance([&](AudioPlayer& audio_player) {
-          audio_player.UpdateSquadReady(
-              settings.settings.squad_ready_path.value_or(""));
-        });
-        ImGuiFileDialog::Instance()->Close();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("Play Squad Ready")) {
-        AudioPlayer::instance([&](AudioPlayer& audio_player) {
-          if (audio_player.UpdateSquadReady(
-                  settings.settings.squad_ready_path.value_or(""))) {
-            audio_player.PlaySquadReady();
-          }
-        });
+    if (ImGui::Button("Open Squad Ready File")) {
+      ImGuiFileDialog::Instance()->OpenDialog(
+          "ChooseSquadReadyFileDlgKey", "Choose Squad Ready File", ".*",
+          settings.settings.squad_ready_path.value_or("."), 1, nullptr,
+          ImGuiFileDialogFlags_Modal);
+    }
+    if (ImGuiFileDialog::Instance()->Display("ChooseSquadReadyFileDlgKey", 0,
+                                             ImVec2(400, 200))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) {
+        settings.settings.squad_ready_path =
+            ImGuiFileDialog::Instance()->GetFilePathName();
       }
       AudioPlayer::instance([&](AudioPlayer& audio_player) {
-        const auto squad_ready_status = audio_player.SquadReadyStatus();
-        if (!squad_ready_status.empty()) {
-          ImGui::SameLine();
-          ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
-                             squad_ready_status.c_str());
+        audio_player.UpdateSquadReady(
+            settings.settings.squad_ready_path.value_or(""));
+      });
+      ImGuiFileDialog::Instance()->Close();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Play Squad Ready")) {
+      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+        if (audio_player.UpdateSquadReady(
+                settings.settings.squad_ready_path.value_or(""))) {
+          audio_player.PlaySquadReady();
         }
       });
     }
+    AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      const auto squad_ready_status = audio_player.SquadReadyStatus();
+      if (!squad_ready_status.empty()) {
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                           squad_ready_status.c_str());
+      }
+    });
   });
 }
 

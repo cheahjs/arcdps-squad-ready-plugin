@@ -124,7 +124,7 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 uintptr_t mod_options() {
-  SettingsUI::instance([](auto i) { i.Draw(squad_tracker); });
+  SettingsUI::instance([&](SettingsUI& i) { i.Draw(squad_tracker); });
 
   return 0;
 }
