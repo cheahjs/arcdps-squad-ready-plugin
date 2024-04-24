@@ -187,7 +187,33 @@ void DrawStatus(std::unique_ptr<SquadTracker>& tracker) {
   }
 
   AudioPlayer::instance([](AudioPlayer& audio_player) {
-    ImGui::Text(std::format("Output device: {}", audio_player.OutputDeviceName())
+    Settings::instance([&](Settings& settings) {
+      std::vector<std::string> devices = audio_player.OutputDevices();
+      const auto preview_value =
+          settings.settings.audio_output_device.value_or("Default");
+
+      if (ImGui::BeginCombo("Output device", preview_value.c_str())) {
+        for (const auto& device : devices) {
+          const bool is_selected = (preview_value == device);
+          if (ImGui::Selectable(device.c_str(), is_selected)) {
+            if (preview_value != device) {
+              settings.settings.audio_output_device = device;
+              audio_player.UpdateOutputDevice(device);
+              audio_player.ReInit();
+            }
+          }
+          if (is_selected) {
+            ImGui::SetItemDefaultFocus();
+          }
+        }
+        ImGui::EndCombo();
+      }
+      if (ImGui::Button("Refresh Audio Devices")) {
+        audio_player.UpdateOutputDevices();
+      }
+    });
+
+    ImGui::Text(std::format("Current output device: {}", audio_player.OutputDeviceName())
                     .c_str());
     if (ImGui::Button("Reset Audio")) {
       audio_player.ReInit();
