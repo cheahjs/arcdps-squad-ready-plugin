@@ -22,6 +22,7 @@ class Settings final : public Singleton<Settings, false> {
     bool ready_check_nag = false;
     bool ready_check_nag_in_combat = false;
     float ready_check_nag_interval_seconds = 5.0f;
+    std::optional<std::string> audio_output_device;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE_NON_THROWING(SettingsObject,
                                                 ready_check_path,
@@ -31,7 +32,8 @@ class Settings final : public Singleton<Settings, false> {
                                                 flash_window,
                                                 ready_check_nag,
                                                 ready_check_nag_in_combat,
-                                                ready_check_nag_interval_seconds)
+                                                ready_check_nag_interval_seconds,
+                                                audio_output_device)
   };
 
   Settings() = default;

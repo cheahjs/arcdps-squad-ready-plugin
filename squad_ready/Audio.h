@@ -8,6 +8,8 @@
 #include "extension/Singleton.h"
 
 #define MINIAUDIO_IMPLEMENTATION
+#include <optional>
+
 #include "miniaudio/extras/miniaudio_split/miniaudio.h"
 
 class WaveFile {
@@ -35,7 +37,8 @@ class AudioPlayer final : public Singleton<AudioPlayer, false> {
   ~AudioPlayer() override;
 
   bool Init(std::string ready_check_path, int ready_check_volume,
-            std::string squad_ready_path, int squad_ready_volume);
+            std::string squad_ready_path, int squad_ready_volume,
+            const std::optional<std::string>& preferred_device_name);
   bool ReInit();
   void PlayReadyCheck() const;
   void PlaySquadReady() const;
@@ -43,11 +46,15 @@ class AudioPlayer final : public Singleton<AudioPlayer, false> {
   bool UpdateSquadReady(const std::string& path);
   void UpdateReadyCheckVolume(int volume);
   void UpdateSquadReadyVolume(int volume);
+  void UpdateOutputDevice(const std::string& device_name);
+  ma_device_id* GetOutputDeviceIdByName(const std::string& device_name) const;
+  bool UpdateOutputDevices();
+  std::vector<std::string> OutputDevices();
   std::string ReadyCheckStatus();
   std::string SquadReadyStatus();
   std::string OutputDeviceName();
 
-private:
+ private:
   void Destroy();
 
   std::unique_ptr<WaveFile> ready_check_sound_;
@@ -56,7 +63,10 @@ private:
   std::unique_ptr<WaveFile> squad_ready_sound_;
   int squad_ready_volume_;
   std::string squad_ready_path_;
+  std::optional<std::string> preferred_device_name_;
+  std::unique_ptr<ma_context> context_;
   std::unique_ptr<ma_engine> engine_;
+  std::vector<std::string> output_devices_;
   std::string ready_check_status_;
   std::string squad_ready_status_;
 };

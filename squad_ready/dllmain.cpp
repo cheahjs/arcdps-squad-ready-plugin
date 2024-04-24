@@ -174,7 +174,8 @@ arcdps_exports* mod_init() {
         Settings::instance().settings.ready_check_path.value_or(""),
         Settings::instance().settings.ready_check_volume,
         Settings::instance().settings.squad_ready_path.value_or(""),
-        Settings::instance().settings.squad_ready_volume);
+        Settings::instance().settings.squad_ready_volume,
+        Settings::instance().settings.audio_output_device);
     squad_tracker = std::make_unique<SquadTracker>();
   } catch (const std::exception& e) {
     loading_successful = false;

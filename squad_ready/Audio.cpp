@@ -10,15 +10,32 @@ AudioPlayer::~AudioPlayer() {
   Destroy();
 }
 
-bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check_volume,
-                       const std::string squad_ready_path, const int squad_ready_volume) {
+bool AudioPlayer::Init(std::string ready_check_path, int ready_check_volume,
+                       std::string squad_ready_path, int squad_ready_volume,
+                       const std::optional<std::string>& preferred_device_name) {
   bool success = true;
 
   ready_check_path_ = ready_check_path;
   squad_ready_path_ = squad_ready_path;
+  preferred_device_name_ = preferred_device_name;
+  output_devices_ = std::vector<std::string>();
 
+  context_ = std::make_unique<ma_context>();
+  if (const auto result = ma_context_init(nullptr, 0, nullptr, context_.get());
+      result != MA_SUCCESS) {
+    logging::MiniAudioError(result, "Failed to initialize audio context");
+    return false;
+  }
+
+  UpdateOutputDevices();
+
+  auto engine_config = ma_engine_config_init();
+  engine_config.pContext = context_.get();
+  engine_config.pPlaybackDeviceID =
+      GetOutputDeviceIdByName(preferred_device_name.value_or("Default"));
   engine_ = std::make_unique<ma_engine>();
-  if (const auto result = ma_engine_init(nullptr, engine_.get()); result != MA_SUCCESS) {
+  if (const auto result = ma_engine_init(&engine_config, engine_.get());
+      result != MA_SUCCESS) {
     logging::MiniAudioError(result, "Failed to initialize audio engine");
     return false;
   }
@@ -43,7 +60,7 @@ bool AudioPlayer::Init(const std::string ready_check_path, const int ready_check
 bool AudioPlayer::ReInit() {
   Destroy();
   return Init(ready_check_path_, ready_check_volume_, squad_ready_path_,
-       squad_ready_volume_);
+              squad_ready_volume_, preferred_device_name_);
 }
 
 bool AudioPlayer::UpdateReadyCheck(const std::string& path) {
@@ -96,6 +113,64 @@ void AudioPlayer::UpdateSquadReadyVolume(const int volume) {
   squad_ready_sound_->SetVolume(volume);
 }
 
+void AudioPlayer::UpdateOutputDevice(const std::string& device_name) {
+  preferred_device_name_ = device_name;
+}
+
+ma_device_id* AudioPlayer::GetOutputDeviceIdByName(
+    const std::string& device_name) const {
+  ma_device_info* playback_device_infos;
+  ma_uint32 playback_device_count;
+  
+  if (const auto result =
+          ma_context_get_devices(context_.get(), &playback_device_infos,
+                                 &playback_device_count, nullptr, nullptr);
+      result != MA_SUCCESS) {
+    logging::MiniAudioError(result, "Failed to retrieve device list");
+    return nullptr;
+  }
+
+  for (ma_uint32 i_device = 0; i_device < playback_device_count; ++i_device) {
+    if (device_name == playback_device_infos[i_device].name) {
+      return &playback_device_infos[i_device].id;
+    }
+  }
+
+  // Device not found, log and return false
+  logging::Squad(
+      std::format("Audio output device '{}' not found", device_name));
+  return nullptr;
+}
+
+bool AudioPlayer::UpdateOutputDevices() {
+  ma_device_info* playback_device_infos;
+  ma_uint32 playback_device_count;
+
+  if (const auto result =
+          ma_context_get_devices(context_.get(), &playback_device_infos,
+                                 &playback_device_count, nullptr, nullptr);
+      result != MA_SUCCESS) {
+    logging::MiniAudioError(result, "Failed to retrieve device list");
+    return false;
+  }
+
+  std::vector<std::string> device_names;
+  device_names.emplace_back("Default");
+
+  for (ma_uint32 i_device = 0; i_device < playback_device_count; ++i_device) {
+    device_names.emplace_back(playback_device_infos[i_device].name);
+  }
+
+  output_devices_ = std::move(device_names);
+
+  return true;
+}
+
+std::vector<std::string> AudioPlayer::OutputDevices() {
+  return output_devices_;
+}
+
+
 std::string AudioPlayer::ReadyCheckStatus() { return ready_check_status_; }
 
 std::string AudioPlayer::SquadReadyStatus() { return squad_ready_status_; }
@@ -110,6 +185,10 @@ void AudioPlayer::Destroy() {
   if (engine_) {
     ma_engine_uninit(engine_.get());
     engine_.reset();
+  }
+  if (context_) {
+    ma_context_uninit(context_.get());
+    context_.reset();
   }
 }
 
