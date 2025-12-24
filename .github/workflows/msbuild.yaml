@@ -31,7 +31,7 @@ jobs:
     - name: Restore from cache and install vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: fba75d09065fcc76a25dcf386b1d00d33f5175af
+        vcpkgGitCommitId: 5d57f5a0a5469a23e005fc79a7c1814ab4fc967e
 
     - name: Setup vcpkg
       run: |
