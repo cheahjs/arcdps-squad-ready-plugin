@@ -399,3 +399,11 @@ FodyWeavers.xsd
 
 # vcpkg
 vcpkg_installed/
+vcpkg/
+
+# CMake
+build/
+install/
+out/
+CMakeUserPresets.json
+compile_commands.json

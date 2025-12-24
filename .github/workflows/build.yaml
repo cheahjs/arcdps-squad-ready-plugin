@@ -1,0 +1,203 @@
+name: Build
+
+on: push
+
+permissions:
+  contents: write
+
+env:
+  VCPKG_COMMIT: c82f74667287d3dc386bce81e44964370c91a289
+
+jobs:
+  # =============================================================================
+  # Windows Build (Authoritative) - CMake + MSVC
+  # =============================================================================
+  build-windows:
+    name: Windows Build (MSVC)
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Install Ninja
+      run: choco install ninja -y
+
+    - name: Restore from cache and install vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+
+    - name: Get CI version
+      if: "!startsWith(github.ref, 'refs/tags/')"
+      id: ci-version
+      shell: bash
+      run: |
+        echo "TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')" >> $GITHUB_OUTPUT
+
+    - name: Update CI version
+      if: "!startsWith(github.ref, 'refs/tags/')"
+      run: python workflow/stamp-version.py "${{steps.ci-version.outputs.TAG}}" "${{github.run_number}}" "${{github.sha}}"
+
+    - name: Get release version
+      if: startsWith(github.ref, 'refs/tags/')
+      id: release-version
+      shell: bash
+      run: |
+        sanitised_tag=${GITHUB_REF/refs\/tags\//}
+        echo "TAG=${sanitised_tag//./,}" >> $GITHUB_OUTPUT
+
+    - name: Update release version
+      if: startsWith(github.ref, 'refs/tags/')
+      run: python workflow/stamp-version.py "${{steps.release-version.outputs.TAG}}" "${{github.run_number}}" "${{github.sha}}"
+
+    - name: Configure CMake
+      run: cmake --preset windows-x64-release
+
+    - name: Build
+      run: cmake --build --preset windows-x64-release
+
+    - name: Archive files
+      uses: actions/upload-artifact@v4
+      with:
+        name: arcdps_squad_ready
+        path: |
+          build/windows-x64-release/squad_ready/arcdps_squad_ready.dll
+
+  # =============================================================================
+  # Cross-compilation Test - Linux
+  # =============================================================================
+  build-cross-linux:
+    name: Cross-compile (Linux → Windows)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64 ninja-build
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+
+    - name: Configure CMake
+      run: cmake --preset cross-mingw-release
+
+    - name: Build
+      run: cmake --build --preset cross-mingw-release
+
+    - name: Upload cross-compiled artifact (verification only)
+      uses: actions/upload-artifact@v4
+      with:
+        name: arcdps_squad_ready_cross_linux
+        path: build/cross-mingw-release/squad_ready/arcdps_squad_ready.dll
+        retention-days: 7
+
+  # =============================================================================
+  # Cross-compilation Test - macOS
+  # =============================================================================
+  build-cross-macos:
+    name: Cross-compile (macOS → Windows)
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        brew install mingw-w64 ninja
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+
+    - name: Configure CMake
+      run: cmake --preset cross-mingw-release
+
+    - name: Build
+      run: cmake --build --preset cross-mingw-release
+
+    - name: Upload cross-compiled artifact (verification only)
+      uses: actions/upload-artifact@v4
+      with:
+        name: arcdps_squad_ready_cross_macos
+        path: build/cross-mingw-release/squad_ready/arcdps_squad_ready.dll
+        retention-days: 7
+
+  # =============================================================================
+  # Sign and Release (Windows build only)
+  # =============================================================================
+  sign-and-release:
+    name: Sign and Release
+    runs-on: windows-2022
+    needs: build-windows
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: arcdps_squad_ready
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign files with Trusted Signing
+        uses: azure/trusted-signing-action@v0.5.0
+        with:
+          endpoint: https://weu.codesigning.azure.net/
+          trusted-signing-account-name: jsc-trustedsigning
+          certificate-profile-name: public-trust
+          files: ${{ github.workspace }}/arcdps_squad_ready.dll
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          exclude-environment-credential: true
+          exclude-workload-identity-credential: true
+          exclude-managed-identity-credential: true
+          exclude-shared-token-cache-credential: true
+          exclude-visual-studio-credential: true
+          exclude-visual-studio-code-credential: true
+          exclude-azure-cli-credential: false
+          exclude-azure-powershell-credential: true
+          exclude-azure-developer-cli-credential: true
+          exclude-interactive-browser-credential: true
+
+      - name: Upload signed build
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcdps_squad_ready_signed
+          path: arcdps_squad_ready.dll
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: arcdps_squad_ready.dll

@@ -1,0 +1,23 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "arcdps-squad-ready-plugin",
+    "version-string": "0.1.0",
+    "description": "ArcDPS Squad Ready Plugin - Plays sounds on ready checks",
+    "dependencies": [
+        {
+            "name": "cpr",
+            "features": []
+        },
+        "nlohmann-json",
+        "magic-enum"
+    ],
+    "overrides": [
+        {
+            "name": "curl",
+            "version": "8.4.0",
+            "$reason": "Stable curl version for cpr"
+        }
+    ]
+}
+
+
