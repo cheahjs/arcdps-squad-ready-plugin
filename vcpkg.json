@@ -4,18 +4,8 @@
     "version-string": "0.1.0",
     "description": "ArcDPS Squad Ready Plugin - Plays sounds on ready checks",
     "dependencies": [
-        {
-            "name": "cpr",
-            "features": []
-        },
+        "curl",
         "nlohmann-json",
         "magic-enum"
-    ],
-    "overrides": [
-        {
-            "name": "curl",
-            "version": "7.88.1",
-            "$reason": "Older curl version compatible with cpr 1.8.3 deprecated APIs"
-        }
     ]
 }

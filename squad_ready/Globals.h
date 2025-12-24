@@ -15,7 +15,7 @@ extern HWND some_window;
 extern bool unofficial_extras_loaded;
 
 // Updating myself stuff
-extern std::unique_ptr<UpdateCheckerBase::UpdateState> update_state;
+extern std::unique_ptr<ArcdpsExtension::UpdateCheckerBase::UpdateState> update_state;
 
 // arc keyboard modifier
 extern DWORD arc_global_mod1;

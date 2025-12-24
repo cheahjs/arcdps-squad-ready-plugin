@@ -10,14 +10,14 @@
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
 void DrawReadyCheck() {
-  Settings::instance([](Settings& settings) {
+  Settings::f([](Settings& settings) {
     ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Ready Check");
 
     // Volume
     int& ready_check_volume = settings.settings.ready_check_volume;
     if (ImGui::SliderInt("Volume - Ready Check", &ready_check_volume, 0, 100,
                          "%d%%")) {
-      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      AudioPlayer::f([&](AudioPlayer& audio_player) {
         audio_player.UpdateReadyCheckVolume(ready_check_volume);
       });
     }
@@ -34,7 +34,7 @@ void DrawReadyCheck() {
         settings.settings.ready_check_path = ready_check_path;
       }
       if (ImGui::IsItemDeactivatedAfterEdit()) {
-        AudioPlayer::instance([&](AudioPlayer& audio_player) {
+        AudioPlayer::f([&](AudioPlayer& audio_player) {
           audio_player.UpdateReadyCheck(
               settings.settings.ready_check_path.value_or(""));
         });
@@ -54,7 +54,7 @@ void DrawReadyCheck() {
         settings.settings.ready_check_path =
             ImGuiFileDialog::Instance()->GetFilePathName();
       }
-      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      AudioPlayer::f([&](AudioPlayer& audio_player) {
         audio_player.UpdateReadyCheck(
             settings.settings.ready_check_path.value_or(""));
       });
@@ -64,7 +64,7 @@ void DrawReadyCheck() {
     // Play button for testing
     ImGui::SameLine();
     if (ImGui::Button("Play Ready Check")) {
-      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      AudioPlayer::f([&](AudioPlayer& audio_player) {
         if (audio_player.UpdateReadyCheck(
                 settings.settings.ready_check_path.value_or(""))) {
           audio_player.PlayReadyCheck();
@@ -73,7 +73,7 @@ void DrawReadyCheck() {
     }
 
     // Status of file
-    AudioPlayer::instance([&](AudioPlayer& audio_player) {
+    AudioPlayer::f([&](AudioPlayer& audio_player) {
       const auto ready_check_status =
           audio_player.ReadyCheckStatus();
       if (!ready_check_status.empty()) {
@@ -95,13 +95,13 @@ void DrawReadyCheck() {
 }
 
 void DrawSquadReady() {
-  Settings::instance([](Settings& settings) {
+  Settings::f([](Settings& settings) {
     ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Squad Ready");
 
     int& squad_ready_volume = settings.settings.squad_ready_volume;
     if (ImGui::SliderInt("Volume - Squad Ready", &squad_ready_volume, 0, 100,
                          "%d%%")) {
-      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      AudioPlayer::f([&](AudioPlayer& audio_player) {
         audio_player.UpdateSquadReadyVolume(squad_ready_volume);
       });
     }
@@ -117,7 +117,7 @@ void DrawSquadReady() {
         settings.settings.squad_ready_path = squad_ready_path;
       }
       if (ImGui::IsItemDeactivatedAfterEdit()) {
-        AudioPlayer::instance([&](AudioPlayer& audio_player) {
+        AudioPlayer::f([&](AudioPlayer& audio_player) {
           audio_player.UpdateSquadReady(
               settings.settings.squad_ready_path.value_or(""));
         });
@@ -136,7 +136,7 @@ void DrawSquadReady() {
         settings.settings.squad_ready_path =
             ImGuiFileDialog::Instance()->GetFilePathName();
       }
-      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      AudioPlayer::f([&](AudioPlayer& audio_player) {
         audio_player.UpdateSquadReady(
             settings.settings.squad_ready_path.value_or(""));
       });
@@ -144,14 +144,14 @@ void DrawSquadReady() {
     }
     ImGui::SameLine();
     if (ImGui::Button("Play Squad Ready")) {
-      AudioPlayer::instance([&](AudioPlayer& audio_player) {
+      AudioPlayer::f([&](AudioPlayer& audio_player) {
         if (audio_player.UpdateSquadReady(
                 settings.settings.squad_ready_path.value_or(""))) {
           audio_player.PlaySquadReady();
         }
       });
     }
-    AudioPlayer::instance([&](AudioPlayer& audio_player) {
+    AudioPlayer::f([&](AudioPlayer& audio_player) {
       const auto squad_ready_status = audio_player.SquadReadyStatus();
       if (!squad_ready_status.empty()) {
         ImGui::SameLine();
@@ -163,7 +163,7 @@ void DrawSquadReady() {
 }
 
 void DrawGlobalSettings() {
-  Settings::instance([](Settings& settings) {
+  Settings::f([](Settings& settings) {
     bool& flash_window = settings.settings.flash_window;
     ImGui::Checkbox("Flash window and tray icon", &flash_window);
   });
@@ -186,8 +186,8 @@ void DrawStatus(std::unique_ptr<SquadTracker>& tracker) {
         "Unofficial extras is required for receiving squad member updates.");
   }
 
-  AudioPlayer::instance([](AudioPlayer& audio_player) {
-    Settings::instance([&](Settings& settings) {
+  AudioPlayer::f([](AudioPlayer& audio_player) {
+    Settings::f([&](Settings& settings) {
       std::vector<std::string> devices = audio_player.OutputDevices();
       const auto preview_value =
           settings.settings.audio_output_device.value_or("Default");

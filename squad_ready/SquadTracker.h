@@ -4,7 +4,7 @@
 #include <mutex>
 
 #include "Audio.h"
-#include "unofficial_extras/Definitions.h"
+#include <ArcdpsUnofficialExtras/Definitions.h>
 
 class SquadTracker {
   std::map<std::string, UserInfo> cached_players_;

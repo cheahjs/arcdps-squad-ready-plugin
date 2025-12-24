@@ -71,7 +71,7 @@ void SquadTracker::Tick() {
   if (!in_ready_check_) return;
   // self is already readied up
   if (self_readied_) return;
-  Settings::instance([this](const Settings& s) {
+  Settings::f([this](const Settings& s) {
     // nag is disabled
     if (!s.settings.ready_check_nag) return;
     // nag time has not passed
@@ -79,7 +79,7 @@ void SquadTracker::Tick() {
     // nag time has passed, time to nag
     SetReadyCheckNagTime();
     FlashWindow();
-    AudioPlayer::instance([](const AudioPlayer& i) { i.PlayReadyCheck(); });
+    AudioPlayer::f([](AudioPlayer& i) { i.PlayReadyCheck(); });
   });
 }
 
@@ -156,7 +156,7 @@ void SquadTracker::Draw() {
   ImGui::Separator();
   ImGui::TextDisabled("Settings");
 
-  Settings::instance([this](const Settings& s) {
+  Settings::f([this](Settings& s) {
     if (s.settings.ready_check_nag) {
       ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "ready_check_nag");
     } else {
@@ -187,14 +187,14 @@ void SquadTracker::ReadyCheckStarted() {
   ready_check_start_time_ = std::chrono::steady_clock::now();
   SetReadyCheckNagTime();
   FlashWindow();
-  AudioPlayer::instance([](const AudioPlayer& i) { i.PlayReadyCheck(); });
+  AudioPlayer::f([](AudioPlayer& i) { i.PlayReadyCheck(); });
 }
 
 void SquadTracker::ReadyCheckCompleted() {
   logging::Debug("squad is ready");
   ready_check_nag_time_ = {};
   FlashWindow();
-  AudioPlayer::instance([](const AudioPlayer& i) { i.PlaySquadReady(); });
+  AudioPlayer::f([](AudioPlayer& i) { i.PlaySquadReady(); });
   ReadyCheckEnded();
 }
 
@@ -205,7 +205,7 @@ void SquadTracker::ReadyCheckEnded() {
 }
 
 void SquadTracker::SetReadyCheckNagTime() {
-  Settings::instance([this](const Settings& s) {
+  Settings::f([this](Settings& s) {
     ready_check_nag_time_ =
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(static_cast<uint64_t>(
@@ -234,7 +234,7 @@ bool SquadTracker::AllPlayersReadied() {
 }
 
 void SquadTracker::FlashWindow() {
-  Settings::instance([](const Settings& s) {
+  Settings::f([](Settings& s) {
     if (!s.settings.flash_window) return;
     const auto wnd = globals::some_window;
     if (wnd == nullptr) {

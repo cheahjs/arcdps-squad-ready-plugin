@@ -60,7 +60,7 @@ target_link_libraries(arcdps_squad_ready PRIVATE
     imgui_file_dialog
     unofficial_extras
     miniaudio
-    cpr::cpr
+    CURL::libcurl
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
 )

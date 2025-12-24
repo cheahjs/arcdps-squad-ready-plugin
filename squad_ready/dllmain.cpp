@@ -12,13 +12,16 @@
 #include "SquadTracker.h"
 #include "extension/KeyBindHandler.h"
 #include "extension/KeyInput.h"
+#include "extension/SimpleNetworkStack.h"
 #include "extension/Singleton.h"
 #include "extension/UpdateCheckerBase.h"
 #include "extension/Widgets.h"
 #include "extension/Windows/PositioningComponent.h"
 #include "extension/arcdps_structs.h"
 #include "imgui/imgui.h"
-#include "unofficial_extras/Definitions.h"
+#include <ArcdpsUnofficialExtras/Definitions.h>
+
+using namespace ArcdpsExtension;
 
 const std::string kSquadReadyPluginName = "Squad Ready";
 const std::string kSquadReadyReleaseUrl =
@@ -63,7 +66,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall,
 
 /* window callback -- return is assigned to umsg (return zero to not be
  * processed by arcdps or game) */
-uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+UINT mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   try {
     globals::some_window = hWnd;
 
@@ -123,30 +126,25 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   return uMsg;
 }
 
-uintptr_t mod_options() {
-  SettingsUI::instance([&](SettingsUI& i) { i.Draw(squad_tracker); });
-
-  return 0;
+void mod_options() {
+  SettingsUI::f([&](SettingsUI& i) { i.Draw(squad_tracker); });
 }
 
-uintptr_t mod_windows(const char* windowname) {
+void mod_windows(const char* windowname) {
   if (!windowname) {
   }
-  return 0;
 }
 
-uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
+void mod_imgui(uint32_t not_charsel_or_loading, uint32_t hide_if_combat_or_ooc) {
   if (squad_tracker) {
     squad_tracker->Tick();
     squad_tracker->Draw();
   }
-  UpdateChecker::instance([](auto i) {
+  UpdateChecker::f([](UpdateChecker& i) {
     i.Draw(
         globals::update_state, kSquadReadyPluginName,
         "https://github.com/cheahjs/arcdps-squad-ready-plugin/releases/latest");
   });
-
-  return 0;
 }
 
 /* initialize mod -- return table that arcdps will use for callbacks. exports
@@ -155,10 +153,15 @@ arcdps_exports* mod_init() {
   bool loading_successful = true;
   std::string error_message = "Unknown error";
 
-  const auto& current_version =
-      UpdateChecker::instance().GetCurrentVersion(globals::self_dll);
+  const auto current_version =
+      UpdateCheckerBase::GetCurrentVersion(globals::self_dll);
 
   try {
+    // Initialize the SimpleNetworkStack singleton for HTTP requests
+    SimpleNetworkStack::init();
+
+    // Initialize UpdateChecker singleton
+    UpdateChecker::init();
     UpdateChecker::instance().ClearFiles(globals::self_dll);
 
     if (current_version) {
@@ -167,9 +170,9 @@ arcdps_exports* mod_init() {
               globals::self_dll, current_version.value(),
               "cheahjs/arcdps-squad-ready-plugin", false));
     }
-    SettingsUI::instance(std::make_unique<SettingsUI>());
-    Settings::instance(std::make_unique<Settings>()).load();
-    AudioPlayer::instance(std::make_unique<AudioPlayer>())
+    SettingsUI::init();
+    Settings::init().load();
+    AudioPlayer::init()
         .Init(
         Settings::instance().settings.ready_check_path.value_or(""),
         Settings::instance().settings.ready_check_volume,
@@ -186,8 +189,8 @@ arcdps_exports* mod_init() {
   memset(&arc_exports, 0, sizeof(arcdps_exports));
   arc_exports.imguivers = IMGUI_VERSION_NUM;
   arc_exports.out_name = kSquadReadyPluginName.c_str();
-  const std::string& version =
-      current_version ? UpdateChecker::instance().GetVersionAsString(
+  const std::string version =
+      current_version ? UpdateCheckerBase::GetVersionAsString(
                             current_version.value())
                       : "Unknown";
   const auto version_c_str = new char[version.length() + 1];
@@ -223,9 +226,9 @@ uintptr_t mod_release() {
     globals::update_state.reset(nullptr);
   }
 
-  Settings::instance([](Settings& i) { i.unload(); });
+  Settings::f([](Settings& i) { i.unload(); });
 
-  g_singletonManagerInstance.Shutdown();
+  ArcdpsExtension::g_singletonManagerInstance.Shutdown();
 
   squad_tracker.reset();
   logging::Squad("Shutdown complete");

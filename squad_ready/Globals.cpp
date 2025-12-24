@@ -11,7 +11,7 @@ HWND some_window = nullptr;
 bool unofficial_extras_loaded;
 
 // updates
-std::unique_ptr<UpdateCheckerBase::UpdateState> update_state = nullptr;
+std::unique_ptr<ArcdpsExtension::UpdateCheckerBase::UpdateState> update_state = nullptr;
 
 // arc keyboard modifier
 DWORD arc_global_mod1 = 0;

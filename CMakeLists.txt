@@ -31,7 +31,6 @@ add_compile_definitions(
     NOMINMAX
     IMGUI_DEFINE_MATH_OPERATORS
     MAGIC_ENUM_RANGE_MAX=256
-    ARCDPS_EXTENSION_NO_LANG_H
 )
 
 # Configuration-specific definitions
@@ -42,7 +41,7 @@ else()
 endif()
 
 # Find vcpkg packages
-find_package(cpr CONFIG REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
@@ -81,6 +80,37 @@ target_link_libraries(unofficial_extras PUBLIC
     magic_enum::magic_enum
 )
 
+# Create an ALIAS target so ArcdpsUnofficialExtras can be found via include paths
+# The extension expects <ArcdpsUnofficialExtras/KeyBindHelper.h> style includes
+# We accomplish this by creating a directory-based include mapping
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ArcdpsUnofficialExtras)
+# Copy headers to the expected location (using configure_file for proper cmake dependency tracking)
+foreach(HEADER Definitions.h KeyBindHelper.h KeyBindsTranslation.h KeyBindStructs.h)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/modules/unofficial_extras/${HEADER}
+        ${CMAKE_CURRENT_BINARY_DIR}/include/ArcdpsUnofficialExtras/${HEADER}
+        COPYONLY
+    )
+endforeach()
+
+# Add the include path for ArcdpsUnofficialExtras-style includes
+target_include_directories(unofficial_extras PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
+# Create magic_enum directory mapping for <magic_enum/magic_enum.hpp> style includes
+# vcpkg puts magic_enum headers directly in include/, but the extension expects them in include/magic_enum/
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/magic_enum)
+file(GLOB MAGIC_ENUM_HEADERS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/magic_enum*.hpp")
+foreach(HEADER_PATH ${MAGIC_ENUM_HEADERS})
+    get_filename_component(HEADER_NAME ${HEADER_PATH} NAME)
+    configure_file(
+        ${HEADER_PATH}
+        ${CMAKE_CURRENT_BINARY_DIR}/include/magic_enum/${HEADER_NAME}
+        COPYONLY
+    )
+endforeach()
+
 # =============================================================================
 # ArcDPS Extension Library (from submodule)
 # =============================================================================
@@ -92,6 +122,7 @@ set(ARCDPS_EXTENSION_SOURCES
     modules/extension/KeyBindHandler.cpp
     modules/extension/KeyInput.cpp
     modules/extension/Localization.cpp
+    modules/extension/SimpleNetworkStack.cpp
     modules/extension/Singleton.cpp
     modules/extension/UpdateChecker.cpp
     modules/extension/UpdateCheckerBase.cpp
@@ -112,9 +143,12 @@ if(NOT MINGW)
     )
 endif()
 
-# IconLoader.cpp uses ATL headers (atlbase.h) which are not available in MinGW
+# IconLoader.cpp and ArcdpsExtension.cpp use ATL headers (atlbase.h) which are not available in MinGW
 if(NOT MINGW)
-    list(APPEND ARCDPS_EXTENSION_SOURCES modules/extension/IconLoader.cpp)
+    list(APPEND ARCDPS_EXTENSION_SOURCES 
+        modules/extension/IconLoader.cpp
+        modules/extension/ArcdpsExtension.cpp
+    )
 endif()
 
 add_library(arcdps_extension STATIC ${ARCDPS_EXTENSION_SOURCES})
@@ -127,7 +161,7 @@ target_include_directories(arcdps_extension PUBLIC
 target_link_libraries(arcdps_extension PUBLIC
     imgui
     unofficial_extras
-    cpr::cpr
+    CURL::libcurl
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
 )

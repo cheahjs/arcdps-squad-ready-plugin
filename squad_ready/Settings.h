@@ -6,11 +6,11 @@
 #include "extension/arcdps_structs.h"
 #include "extension/nlohmannJsonExtension.h"
 #include "imgui/imgui.h"
-#include "unofficial_extras/Definitions.h"
+#include <ArcdpsUnofficialExtras/Definitions.h>
 
 const std::string kSettingsJsonPath = "addons\\arcdps\\arcdps_squad_ready.json";
 
-class Settings final : public Singleton<Settings, false> {
+class Settings final : public ArcdpsExtension::Singleton<Settings> {
  public:
   struct SettingsObject {
     uint32_t version = 1;

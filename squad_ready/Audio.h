@@ -31,7 +31,7 @@ class WaveFile {
   bool valid_;
 };
 
-class AudioPlayer final : public Singleton<AudioPlayer, false> {
+class AudioPlayer final : public ArcdpsExtension::Singleton<AudioPlayer> {
  public:
   AudioPlayer() = default;
   ~AudioPlayer() override;

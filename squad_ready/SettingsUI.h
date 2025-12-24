@@ -2,7 +2,7 @@
 #include "SquadTracker.h"
 #include "extension/Singleton.h"
 
-class SettingsUI : public Singleton<SettingsUI, false> {
+class SettingsUI : public ArcdpsExtension::Singleton<SettingsUI> {
  public:
   SettingsUI() = default;
 
