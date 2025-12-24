@@ -27,6 +27,11 @@ set(PLUGIN_RESOURCES
     arcdps-squad-ready-plugin.rc
 )
 
+# Set resource compiler include path for MinGW
+if(MINGW)
+    set(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I ${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+
 # Create the shared library (DLL)
 add_library(arcdps_squad_ready SHARED
     ${PLUGIN_SOURCES}

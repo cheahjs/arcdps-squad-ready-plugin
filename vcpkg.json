@@ -14,10 +14,8 @@
     "overrides": [
         {
             "name": "curl",
-            "version": "8.4.0",
-            "$reason": "Stable curl version for cpr"
+            "version": "7.88.1",
+            "$reason": "Older curl version compatible with cpr 1.8.3 deprecated APIs"
         }
     ]
 }
-
-

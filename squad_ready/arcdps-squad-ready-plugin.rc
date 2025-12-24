@@ -50,9 +50,9 @@ END
 // WAVE
 //
 
-READY_CHECK             WAVE                    "sounds\\ready_check.wav"
+READY_CHECK             WAVE                    "sounds/ready_check.wav"
 
-SQUAD_READY             WAVE                    "sounds\\squad_ready.wav"
+SQUAD_READY             WAVE                    "sounds/squad_ready.wav"
 
 
 /////////////////////////////////////////////////////////////////////////////

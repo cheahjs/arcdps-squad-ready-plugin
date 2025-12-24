@@ -241,21 +241,23 @@ extern "C" __declspec(dllexport) void* get_init_addr(
   // d3dversion==11
   arc_version = arcversion;
   ImGui::SetCurrentContext(imguicontext);
-  ImGui::SetAllocatorFunctions(static_cast<void*(*)(size_t, void*)>(mallocfn),
-                               static_cast<void(*)(void*, void*)>(freefn));
+  using AllocFunc = void*(*)(size_t, void*);
+  using FreeFunc = void(*)(void*, void*);
+  ImGui::SetAllocatorFunctions(reinterpret_cast<AllocFunc>(mallocfn),
+                               reinterpret_cast<FreeFunc>(freefn));
 
   ARC_EXPORT_E6 = reinterpret_cast<arc_export_func_u64>(GetProcAddress(arcdll, "e6"));
   ARC_EXPORT_E7 = reinterpret_cast<arc_export_func_u64>(GetProcAddress(arcdll, "e7"));
   ARC_LOG_FILE = reinterpret_cast<e3_func_ptr>(GetProcAddress(arcdll, "e3"));
   ARC_LOG = reinterpret_cast<e3_func_ptr>(GetProcAddress(arcdll, "e8"));
-  return mod_init;
+  return reinterpret_cast<void*>(mod_init);
 }
 
 /* export -- arcdps looks for this exported function and calls the address it
  * returns on client exit */
 extern "C" __declspec(dllexport) void* get_release_addr() {
   arc_version = nullptr;
-  return mod_release;
+  return reinterpret_cast<void*>(mod_release);
 }
 
 /**

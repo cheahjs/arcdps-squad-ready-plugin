@@ -84,11 +84,10 @@ target_link_libraries(unofficial_extras PUBLIC
 # =============================================================================
 # ArcDPS Extension Library (from submodule)
 # =============================================================================
-add_library(arcdps_extension STATIC
+set(ARCDPS_EXTENSION_SOURCES
     modules/extension/arcdps_structs.cpp
     modules/extension/CombatEventHandler.cpp
     modules/extension/EventSequencer.cpp
-    modules/extension/IconLoader.cpp
     modules/extension/imgui_stdlib.cpp
     modules/extension/KeyBindHandler.cpp
     modules/extension/KeyInput.cpp
@@ -100,12 +99,25 @@ add_library(arcdps_extension STATIC
     modules/extension/Windows/KeyBindComponent.cpp
     modules/extension/Windows/MainWindow.cpp
     modules/extension/Windows/PositioningComponent.cpp
-    modules/extension/Windows/Demo/DemoKeyBindComponent.cpp
-    modules/extension/Windows/Demo/DemoPositioningComponent.cpp
-    modules/extension/Windows/Demo/DemoTable.cpp
-    modules/extension/Windows/Demo/DemoTableWindow.cpp
-    modules/extension/Windows/Demo/DemoWindow.cpp
 )
+
+# Demo files have issues with MinGW (missing <atomic> include in submodule headers)
+if(NOT MINGW)
+    list(APPEND ARCDPS_EXTENSION_SOURCES
+        modules/extension/Windows/Demo/DemoKeyBindComponent.cpp
+        modules/extension/Windows/Demo/DemoPositioningComponent.cpp
+        modules/extension/Windows/Demo/DemoTable.cpp
+        modules/extension/Windows/Demo/DemoTableWindow.cpp
+        modules/extension/Windows/Demo/DemoWindow.cpp
+    )
+endif()
+
+# IconLoader.cpp uses ATL headers (atlbase.h) which are not available in MinGW
+if(NOT MINGW)
+    list(APPEND ARCDPS_EXTENSION_SOURCES modules/extension/IconLoader.cpp)
+endif()
+
+add_library(arcdps_extension STATIC ${ARCDPS_EXTENSION_SOURCES})
 
 target_include_directories(arcdps_extension PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/extension
