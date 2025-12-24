@@ -51,7 +51,7 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     let mut path = settings.ready_check_path.clone().unwrap_or_default();
     
     // Reserve space for "Browse" button
-    ui.set_next_item_width(ui.content_region_avail()[0] - 70.0);
+    ui.set_next_item_width(-70.0);
     if ui.input_text("##ready_check_path", &mut path).build() {
         if path.is_empty() {
             settings.ready_check_path = None;
@@ -118,7 +118,7 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     let mut path = settings.squad_ready_path.clone().unwrap_or_default();
     
     // Reserve space for "Browse" button
-    ui.set_next_item_width(ui.content_region_avail()[0] - 70.0);
+    ui.set_next_item_width(-70.0);
     if ui.input_text("##squad_ready_path", &mut path).build() {
         if path.is_empty() {
             settings.squad_ready_path = None;
