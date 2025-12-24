@@ -36,3 +36,53 @@ The plugin can be set to "nag" with the ready check started sound on an interval
 
 * If you are already in a squad (a pending invite counts as well) when the game is started, this addon will not track existing players until an update occurs (such as moving subgroups, hitting the ready button). This means the ready check and squad ready sounds may or may not play at incorrect times.
 * If there is a pending invite and a ready check occurs, the squad ready sound will not play.
+
+## Building
+
+### Windows (Visual Studio)
+
+Open `arcdps-squad-ready-plugin.sln` in Visual Studio 2022 and build the `Release|x64` configuration.
+
+Prerequisites:
+- Visual Studio 2022 with C++ workload
+- [vcpkg](https://github.com/microsoft/vcpkg) integrated with Visual Studio
+
+### macOS (Cross-compilation)
+
+The project can be cross-compiled on macOS to produce a Windows DLL using CMake and llvm-mingw.
+
+**Prerequisites:**
+```bash
+# Install llvm-mingw for cross-compilation toolchain
+brew install llvm-mingw
+
+# Install CMake and Ninja
+brew install cmake ninja
+
+# Clone vcpkg if not already present
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+
+# Set VCPKG_ROOT environment variable
+export VCPKG_ROOT=~/vcpkg
+```
+
+**Building:**
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/cheahjs/arcdps-squad-ready-plugin.git
+cd arcdps-squad-ready-plugin
+
+# Configure and build
+cmake -B build \
+  -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+  -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$(pwd)/cmake/toolchain-mingw.cmake \
+  -DVCPKG_TARGET_TRIPLET=x64-mingw-static \
+  -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build
+```
+
+The output DLL will be in `build/squad_ready/arcdps_squad_ready.dll`.
+
