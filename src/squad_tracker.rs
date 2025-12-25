@@ -191,7 +191,7 @@ impl<N: SquadNotifier> SquadTracker<N> {
                             // Squad leader has ended a ready check
                             self.ready_check_ended();
                         }
-                    } else if self.all_players_readied() {
+                    } else if self.in_ready_check && self.all_players_readied() {
                         self.ready_check_completed(settings);
                     }
                 }
@@ -263,7 +263,9 @@ impl<N: SquadNotifier> SquadTracker<N> {
     }
 
     fn set_ready_check_nag_time(&mut self, settings: &Settings) {
-        let nag_duration = Duration::from_secs_f32(settings.ready_check_nag_interval_seconds);
+        // Clamp to >= 0.0 to prevent panic from Duration::from_secs_f32 on negative values
+        let interval = settings.ready_check_nag_interval_seconds.max(0.0);
+        let nag_duration = Duration::from_secs_f32(interval);
         self.ready_check_nag_time = Some(Instant::now() + nag_duration);
     }
 
@@ -344,28 +346,24 @@ mod tests {
         let mut tracker = SquadTracker::with_notifier(notifier.clone());
         let settings = Settings::default();
 
-        let users = vec![
-            MockUser {
-                account_name: Some(":Leader.1234".to_string()),
-                ready_status: false,
-                role: UserRole::SquadLeader,
-                subgroup: 1,
-            },
-        ];
+        let users = vec![MockUser {
+            account_name: Some(":Leader.1234".to_string()),
+            ready_status: false,
+            role: UserRole::SquadLeader,
+            subgroup: 1,
+        }];
 
         // Initial state
         tracker.update_users(users, "Self.5678", &settings);
         assert_eq!(notifier.ready_check_plays.load(Ordering::SeqCst), 0);
 
         // Leader readies up
-        let users = vec![
-            MockUser {
-                account_name: Some(":Leader.1234".to_string()),
-                ready_status: true,
-                role: UserRole::SquadLeader,
-                subgroup: 1,
-            },
-        ];
+        let users = vec![MockUser {
+            account_name: Some(":Leader.1234".to_string()),
+            ready_status: true,
+            role: UserRole::SquadLeader,
+            subgroup: 1,
+        }];
         tracker.update_users(users, "Self.5678", &settings);
 
         assert_eq!(notifier.ready_check_plays.load(Ordering::SeqCst), 1);
@@ -395,26 +393,22 @@ mod tests {
         ];
         tracker.update_users(users, "Leader.1234", &settings);
 
-        let users = vec![
-            MockUser {
-                account_name: Some(":Leader.1234".to_string()),
-                ready_status: true,
-                role: UserRole::SquadLeader,
-                subgroup: 1,
-            },
-        ];
+        let users = vec![MockUser {
+            account_name: Some(":Leader.1234".to_string()),
+            ready_status: true,
+            role: UserRole::SquadLeader,
+            subgroup: 1,
+        }];
         tracker.update_users(users, "Leader.1234", &settings);
         assert!(tracker.in_ready_check);
 
         // 2. Member readies up
-        let users = vec![
-            MockUser {
-                account_name: Some(":Member.1".to_string()),
-                ready_status: true,
-                role: UserRole::Member,
-                subgroup: 1,
-            },
-        ];
+        let users = vec![MockUser {
+            account_name: Some(":Member.1".to_string()),
+            ready_status: true,
+            role: UserRole::Member,
+            subgroup: 1,
+        }];
         tracker.update_users(users, "Leader.1234", &settings);
 
         assert_eq!(notifier.squad_ready_plays.load(Ordering::SeqCst), 1);
@@ -430,23 +424,24 @@ mod tests {
         settings.ready_check_nag_interval_seconds = 0.0; // Instant nag for testing
 
         // Start ready check
-        let users = vec![
-            MockUser {
-                account_name: Some(":Leader.1234".to_string()),
-                ready_status: true,
-                role: UserRole::SquadLeader,
-                subgroup: 1,
-            },
-        ];
+        let users = vec![MockUser {
+            account_name: Some(":Leader.1234".to_string()),
+            ready_status: true,
+            role: UserRole::SquadLeader,
+            subgroup: 1,
+        }];
         tracker.update_users(users, "Self.5678", &settings);
-        
+
         // Initial start calls: 1 flash, 1 ready check play
         let initial_plays = notifier.ready_check_plays.load(Ordering::SeqCst);
         assert!(initial_plays >= 1);
 
         // Tick should trigger nag
         tracker.tick(&settings);
-        assert_eq!(notifier.ready_check_plays.load(Ordering::SeqCst), initial_plays + 1);
+        assert_eq!(
+            notifier.ready_check_plays.load(Ordering::SeqCst),
+            initial_plays + 1
+        );
     }
 
     #[test]
@@ -455,27 +450,69 @@ mod tests {
         let mut tracker = SquadTracker::with_notifier(notifier.clone());
         let settings = Settings::default();
 
-        tracker.update_users(vec![
-            MockUser {
+        tracker.update_users(
+            vec![MockUser {
                 account_name: Some(":Leader.1234".to_string()),
                 ready_status: true,
                 role: UserRole::SquadLeader,
                 subgroup: 1,
-            },
-        ], "Self.5678", &settings);
+            }],
+            "Self.5678",
+            &settings,
+        );
         assert!(tracker.in_ready_check);
 
         // Self leaves (role becomes None or removed)
-        tracker.update_users(vec![
-            MockUser {
+        tracker.update_users(
+            vec![MockUser {
                 account_name: Some(":Self.5678".to_string()),
                 ready_status: false,
                 role: UserRole::None,
                 subgroup: 0,
-            },
-        ], "Self.5678", &settings);
+            }],
+            "Self.5678",
+            &settings,
+        );
 
         assert!(!tracker.in_ready_check);
         assert!(tracker.cached_players.is_empty());
+    }
+
+    #[test]
+    fn test_squad_ready_not_fired_without_active_ready_check() {
+        let notifier = MockNotifier::default();
+        let mut tracker = SquadTracker::with_notifier(notifier.clone());
+        let settings = Settings::default();
+
+        // 1. Initialize squad with leader (not readied) and a member (not readied)
+        let users = vec![
+            MockUser {
+                account_name: Some(":Leader.1234".to_string()),
+                ready_status: false,
+                role: UserRole::SquadLeader,
+                subgroup: 1,
+            },
+            MockUser {
+                account_name: Some(":Member.1".to_string()),
+                ready_status: false,
+                role: UserRole::Member,
+                subgroup: 1,
+            },
+        ];
+        tracker.update_users(users, "Self.5678", &settings);
+        assert!(!tracker.in_ready_check);
+
+        // 2. Member readies up without an active ready check which should only happen if we desynced
+        let users = vec![MockUser {
+            account_name: Some(":Member.1".to_string()),
+            ready_status: true,
+            role: UserRole::Member,
+            subgroup: 1,
+        }];
+        tracker.update_users(users, "Self.5678", &settings);
+
+        // Squad ready should NOT have been played since no ready check is active
+        assert_eq!(notifier.squad_ready_plays.load(Ordering::SeqCst), 0);
+        assert!(!tracker.in_ready_check);
     }
 }
