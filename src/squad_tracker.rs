@@ -70,7 +70,7 @@ impl SquadNotifier for RealSquadNotifier {
             // Get the foreground window
             let hwnd = unsafe { GetForegroundWindow() };
             if !hwnd.is_invalid() {
-                let mut flash_info = FLASHWINFO {
+                let flash_info = FLASHWINFO {
                     cbSize: std::mem::size_of::<FLASHWINFO>() as u32,
                     hwnd,
                     dwFlags: FLASHW_ALL | FLASHW_TIMERNOFG,
@@ -79,7 +79,7 @@ impl SquadNotifier for RealSquadNotifier {
                 };
 
                 unsafe {
-                    let _ = FlashWindowEx(&mut flash_info);
+                    let _ = FlashWindowEx(&flash_info);
                 }
             }
         }

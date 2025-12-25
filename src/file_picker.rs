@@ -216,10 +216,10 @@ impl FilePicker {
                         for drive in &drives {
                             let drive_str = drive.to_string_lossy();
                             let is_selected = drive_str == current_drive;
-                            if Selectable::new(&drive_str).selected(is_selected).build(ui) {
-                                if drive.is_dir() {
-                                    new_dir = Some(drive.clone());
-                                }
+                            if Selectable::new(&drive_str).selected(is_selected).build(ui)
+                                && drive.is_dir()
+                            {
+                                new_dir = Some(drive.clone());
                             }
                         }
                     }
@@ -233,11 +233,11 @@ impl FilePicker {
 
                     for (i, comp) in components.iter().enumerate() {
                         let name = comp.to_string_lossy();
-                        if ui.button(&format!("{}##{}", name, i)) {
+                        if ui.button(format!("{}##{}", name, i)) {
                             // Rebuild path up to this component
                             let mut nav_path = PathBuf::new();
-                            for j in 0..=i {
-                                nav_path.push(&components[j]);
+                            for component in components.iter().take(i + 1) {
+                                nav_path.push(component);
                             }
                             // On Windows, "C:" alone refers to CWD on that drive, not the root.
                             // We need "C:\" to refer to the root, so add a separator if needed.
@@ -270,14 +270,12 @@ impl FilePicker {
                     } else {
                         for entry in &cache_entries {
                             if entry.is_dir {
-                                if ui.button(&format!("[dir]  {}", entry.name)) {
+                                if ui.button(format!("[dir]  {}", entry.name)) {
                                     new_dir = Some(entry.path.clone());
                                 }
-                            } else {
-                                if ui.button(&format!("[file] {}", entry.name)) {
-                                    selected_path = Some(entry.path.clone());
-                                    should_close = true;
-                                }
+                            } else if ui.button(format!("[file] {}", entry.name)) {
+                                selected_path = Some(entry.path.clone());
+                                should_close = true;
                             }
                         }
                     }
