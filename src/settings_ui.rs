@@ -213,24 +213,23 @@ fn draw_status(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
         if Selectable::new("Default")
             .selected(is_default_selected)
             .build(ui)
+            && settings.audio_output_device.is_some()
         {
-            if settings.audio_output_device.is_some() {
-                settings.audio_output_device = None;
-                AUDIO_PLAYER.lock().unwrap().set_device(None);
-            }
+            settings.audio_output_device = None;
+            AUDIO_PLAYER.lock().unwrap().set_device(None);
         }
 
         // Device options
         for device in &devices {
             let selected = settings.audio_output_device.as_ref() == Some(device);
-            if Selectable::new(device).selected(selected).build(ui) {
-                if settings.audio_output_device.as_ref() != Some(device) {
-                    settings.audio_output_device = Some(device.clone());
-                    AUDIO_PLAYER
-                        .lock()
-                        .unwrap()
-                        .set_device(Some(device.clone()));
-                }
+            if Selectable::new(device).selected(selected).build(ui)
+                && settings.audio_output_device.as_ref() != Some(device)
+            {
+                settings.audio_output_device = Some(device.clone());
+                AUDIO_PLAYER
+                    .lock()
+                    .unwrap()
+                    .set_device(Some(device.clone()));
             }
         }
     }
