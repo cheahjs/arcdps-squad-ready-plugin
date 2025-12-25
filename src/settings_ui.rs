@@ -46,21 +46,18 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     // Volume
     Slider::new("Volume - Ready Check", 0, 100).build(ui, &mut settings.ready_check_volume);
 
-    // Path input
-    ui.text("Ready check sound path (blank for default):");
+    // Path input (inline label)
     let mut path = settings.ready_check_path.clone().unwrap_or_default();
-    
-    // Reserve space for "Browse" button
-    ui.set_next_item_width(-70.0);
-    if ui.input_text("##ready_check_path", &mut path).build() {
+    if ui.input_text("Path to file to play on ready check (blank for default)", &mut path).build() {
         if path.is_empty() {
             settings.ready_check_path = None;
         } else {
             settings.ready_check_path = Some(path);
         }
     }
-    ui.same_line();
-    if ui.button("Browse##ready_check") {
+
+    // Open file button
+    if ui.button("Open Ready Check File") {
         if let Some(ref path) = settings.ready_check_path {
             let p = PathBuf::from(path);
             if let Some(parent) = p.parent() {
@@ -76,7 +73,8 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         settings.ready_check_path = Some(selected.to_string_lossy().to_string());
     }
 
-    // Play button for testing
+    // Play button for testing (same line as Open button)
+    ui.same_line();
     if ui.button("Play Ready Check") {
         let mut track = AudioTrack::new();
         let path = settings.ready_check_path.as_deref().unwrap_or("");
@@ -85,18 +83,14 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         }
     }
     
-    // Show status
+    // Show status (same line as Play button)
     {
         let mut track = AudioTrack::new();
         let path = settings.ready_check_path.as_deref().unwrap_or("");
         let _ = track.load_from_path(path, sounds::READY_CHECK, settings.ready_check_volume);
         if !track.status_message.is_empty() && track.status_message != "Using default sound" {
             ui.same_line();
-            if track.is_valid() {
-                ui.text(&track.status_message);
-            } else {
-                ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
-            }
+            ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
         }
     }
     
@@ -113,21 +107,18 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     // Volume
     Slider::new("Volume - Squad Ready", 0, 100).build(ui, &mut settings.squad_ready_volume);
 
-    // Path input
-    ui.text("Squad ready sound path (blank for default):");
+    // Path input (inline label)
     let mut path = settings.squad_ready_path.clone().unwrap_or_default();
-    
-    // Reserve space for "Browse" button
-    ui.set_next_item_width(-70.0);
-    if ui.input_text("##squad_ready_path", &mut path).build() {
+    if ui.input_text("Path to file to play on squad ready (blank for default)", &mut path).build() {
         if path.is_empty() {
             settings.squad_ready_path = None;
         } else {
             settings.squad_ready_path = Some(path);
         }
     }
-    ui.same_line();
-    if ui.button("Browse##squad_ready") {
+
+    // Open file button
+    if ui.button("Open Squad Ready File") {
         if let Some(ref path) = settings.squad_ready_path {
             let p = PathBuf::from(path);
             if let Some(parent) = p.parent() {
@@ -143,7 +134,8 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         settings.squad_ready_path = Some(selected.to_string_lossy().to_string());
     }
 
-    // Play button for testing
+    // Play button for testing (same line as Open button)
+    ui.same_line();
     if ui.button("Play Squad Ready") {
         let mut track = AudioTrack::new();
         let path = settings.squad_ready_path.as_deref().unwrap_or("");
@@ -152,18 +144,14 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         }
     }
     
-    // Show status
+    // Show status (same line as Play button)
     {
         let mut track = AudioTrack::new();
         let path = settings.squad_ready_path.as_deref().unwrap_or("");
         let _ = track.load_from_path(path, sounds::SQUAD_READY, settings.squad_ready_volume);
         if !track.status_message.is_empty() && track.status_message != "Using default sound" {
             ui.same_line();
-            if track.is_valid() {
-                ui.text(&track.status_message);
-            } else {
-                ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
-            }
+            ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
         }
     }
 }
@@ -213,6 +201,15 @@ fn draw_status(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
             }
         }
     }
+    
+    // Refresh devices button
+    if ui.button("Refresh Audio Devices") {
+        // Force re-enumeration on next frame by doing nothing here
+        // The devices list is already re-fetched each frame
+    }
+    
+    // Current output device display
+    ui.text(format!("Current output device: {}", current_device));
     
     // Reset audio button
     if ui.button("Reset Audio") {
