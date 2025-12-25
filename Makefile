@@ -48,3 +48,7 @@ install-windows-release: build-windows-release copy-windows-release
 lint:
 	cargo fmt
 	cargo clippy
+
+lint-windows:
+	cargo fmt
+	cargo xwin clippy --target $(TARGET)
