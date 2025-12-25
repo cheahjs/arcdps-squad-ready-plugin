@@ -36,7 +36,10 @@ fn imgui(ui: &Ui, not_loading_or_character_selection: bool) {
 }
 
 fn extras_init(addon_info: arcdps::extras::ExtrasAddonInfo, account_name: Option<&str>) {
-    PLUGIN.lock().unwrap().extras_init(&addon_info, account_name);
+    PLUGIN
+        .lock()
+        .unwrap()
+        .extras_init(&addon_info, account_name);
 }
 
 fn extras_squad_update(users: UserInfoIter) {

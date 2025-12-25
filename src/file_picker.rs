@@ -1,20 +1,20 @@
 // Adapted from https://github.com/tseli0s/imfile
 // MIT License - Aggelos Tselios
-use arcdps::imgui::{Condition, Ui, Window, ChildWindow, Selectable};
-use std::fs;
-use std::path::PathBuf;
+use arcdps::imgui::{ChildWindow, Condition, Selectable, Ui, Window};
 use log::error;
 use std::cmp::Ordering;
+use std::fs;
+use std::path::PathBuf;
 
 /// Get available drive letters on Windows (e.g., ["C:\\", "D:\\", ...])
 #[cfg(windows)]
 fn get_available_drives() -> Vec<PathBuf> {
     use windows::Win32::Storage::FileSystem::GetLogicalDrives;
-    
+
     let mut drives = Vec::new();
     // SAFETY: GetLogicalDrives has no unsafe preconditions
     let bitmask = unsafe { GetLogicalDrives() };
-    
+
     for i in 0..26u32 {
         if (bitmask & (1 << i)) != 0 {
             let letter = (b'A' + i as u8) as char;
@@ -130,7 +130,7 @@ impl FilePicker {
         let current_dir = initial_dir
             .filter(|p| p.is_dir())
             .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-        
+
         Self {
             title,
             current_dir,
@@ -154,7 +154,8 @@ impl FilePicker {
         }
 
         // Refresh cache if needed (only does work if path/settings changed)
-        self.cache.refresh_if_needed(&self.current_dir, self.show_hidden_files);
+        self.cache
+            .refresh_if_needed(&self.current_dir, self.show_hidden_files);
 
         let mut selected_path = None;
         let mut window_open = self.is_open;
@@ -167,9 +168,12 @@ impl FilePicker {
         let mut show_hidden_files = self.show_hidden_files;
         let mut filter_text = self.filter_text.clone();
         let filter_lower = filter_text.to_lowercase();
-        
+
         // Filter cached entries based on filter text
-        let cache_entries: Vec<CachedEntry> = self.cache.entries.iter()
+        let cache_entries: Vec<CachedEntry> = self
+            .cache
+            .entries
+            .iter()
             .filter(|e| {
                 if filter_lower.is_empty() {
                     true
@@ -206,7 +210,7 @@ impl FilePicker {
                             p.to_string_lossy().to_string()
                         })
                         .unwrap_or_default();
-                    
+
                     ui.set_next_item_width(60.0);
                     if let Some(_combo) = ui.begin_combo("##drive", &current_drive) {
                         for drive in &drives {
@@ -219,13 +223,14 @@ impl FilePicker {
                             }
                         }
                     }
-                    
+
                     ui.same_line();
                     ui.text("Path:");
                     ui.same_line();
-                    
-                    let components: Vec<PathBuf> = current_dir_clone.iter().map(PathBuf::from).collect();
-                    
+
+                    let components: Vec<PathBuf> =
+                        current_dir_clone.iter().map(PathBuf::from).collect();
+
                     for (i, comp) in components.iter().enumerate() {
                         let name = comp.to_string_lossy();
                         if ui.button(&format!("{}##{}", name, i)) {
@@ -317,7 +322,7 @@ impl FilePicker {
             // Update filter text if it changed
             self.filter_text = filter_text;
         }
-        
+
         // Apply hidden files toggle
         if toggle_hidden {
             self.show_hidden_files = show_hidden_files;

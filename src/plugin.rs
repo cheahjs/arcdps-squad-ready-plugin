@@ -89,11 +89,8 @@ impl Plugin {
     }
 
     pub fn squad_update(&mut self, users: UserInfoIter) {
-        self.squad_tracker.update_users(
-            users,
-            &self.self_account_name,
-            &self.settings,
-        );
+        self.squad_tracker
+            .update_users(users, &self.self_account_name, &self.settings);
     }
 
     pub fn render_windows(&mut self, _ui: &Ui, _not_loading: bool) {
