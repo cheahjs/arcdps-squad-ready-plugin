@@ -23,7 +23,7 @@ pub struct Settings {
     #[serde(default = "default_volume")]
     pub squad_ready_volume: i32,
 
-#[serde(default = "default_true")]
+    #[serde(default = "default_true")]
     pub flash_window: bool,
 
     #[serde(default)]
