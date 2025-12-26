@@ -77,18 +77,16 @@ impl Plugin {
             }
         };
 
-        if let Some(ref version) = current_version {
-            info!(
-                "Current version: {}",
-                update_checker::version_to_string(version)
-            );
-        }
+        info!(
+            "Current version: {}",
+            update_checker::version_to_string(&current_version)
+        );
 
         // Clear old update files
         update_checker::clear_old_files(&dll_path);
 
         // Create update state and start checking for updates
-        let mut state = UpdateState::new(current_version, dll_path);
+        let mut state = UpdateState::new(Some(current_version), dll_path);
         update_checker::check_for_update(&mut state);
         self.update_state = Some(state);
     }

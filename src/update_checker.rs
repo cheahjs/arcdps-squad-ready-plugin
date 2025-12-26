@@ -3,13 +3,9 @@ use log::*;
 use serde::Deserialize;
 use std::fs;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
-use windows::core::PCWSTR;
-use windows::Win32::Storage::FileSystem::{
-    GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW, VS_FIXEDFILEINFO,
-};
 use windows::Win32::System::LibraryLoader::GetModuleFileNameW;
 
 const GITHUB_REPO: &str = "cheahjs/arcdps-squad-ready-plugin";
@@ -83,73 +79,37 @@ impl UpdateState {
     }
 }
 
-/// Get the current version from the DLL's version info resource
-pub fn get_current_version() -> Option<Version> {
-    unsafe {
-        // Get the module file name
-        let mut path_buffer = [0u16; 260];
-        let path_len = GetModuleFileNameW(None, &mut path_buffer);
-        if path_len == 0 {
-            error!("GetModuleFileNameW failed");
-            return None;
-        }
-
-        let path = PCWSTR::from_raw(path_buffer.as_ptr());
-
-        // Get version info size
-        let size = GetFileVersionInfoSizeW(path, None);
-        if size == 0 {
-            error!("GetFileVersionInfoSizeW failed");
-            return None;
-        }
-
-        // Get version info
-        let mut data = vec![0u8; size as usize];
-        if GetFileVersionInfoW(path, Some(0), size, data.as_mut_ptr() as *mut _).is_err() {
-            error!("GetFileVersionInfoW failed");
-            return None;
-        }
-
-        // Query the root block for VS_FIXEDFILEINFO
-        let mut info_ptr: *mut core::ffi::c_void = std::ptr::null_mut();
-        let mut info_len: u32 = 0;
-
-        // The query path for root fixed info is "\\"
-        let query_path: Vec<u16> = "\\".encode_utf16().chain(std::iter::once(0)).collect();
-
-        if !VerQueryValueW(
-            data.as_ptr() as *const _,
-            PCWSTR::from_raw(query_path.as_ptr()),
-            &mut info_ptr,
-            &mut info_len,
-        )
-        .as_bool()
-        {
-            error!("VerQueryValueW failed");
-            return None;
-        }
-
-        if info_ptr.is_null() || info_len == 0 {
-            error!("VerQueryValueW returned null or empty");
-            return None;
-        }
-
-        let info = &*(info_ptr as *const VS_FIXEDFILEINFO);
-
-        Some([
-            ((info.dwProductVersionMS >> 16) & 0xFFFF) as u16,
-            (info.dwProductVersionMS & 0xFFFF) as u16,
-            ((info.dwProductVersionLS >> 16) & 0xFFFF) as u16,
-            (info.dwProductVersionLS & 0xFFFF) as u16,
-        ])
-    }
+/// Get the current version from Cargo.toml (set at compile time)
+pub fn get_current_version() -> Version {
+    parse_version(env!("CARGO_PKG_VERSION")).unwrap_or([0, 0, 0, 0])
 }
 
 /// Get the path to the current DLL
 pub fn get_dll_path() -> Option<PathBuf> {
+    use windows::Win32::Foundation::HMODULE;
+    use windows::Win32::System::LibraryLoader::{
+        GetModuleHandleExW, GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+        GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+    };
+
     unsafe {
+        // Get the module handle for the DLL by using the address of a function in this module
+        let mut module: HMODULE = HMODULE::default();
+        let self_addr = get_dll_path as *const ();
+
+        if GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            windows::core::PCWSTR::from_raw(self_addr as *const u16),
+            &mut module,
+        )
+        .is_err()
+        {
+            error!("GetModuleHandleExW failed");
+            return None;
+        }
+
         let mut path_buffer = [0u16; 260];
-        let path_len = GetModuleFileNameW(None, &mut path_buffer);
+        let path_len = GetModuleFileNameW(Some(module), &mut path_buffer);
         if path_len == 0 {
             error!("GetModuleFileNameW failed");
             return None;
@@ -161,7 +121,7 @@ pub fn get_dll_path() -> Option<PathBuf> {
 }
 
 /// Clear old update files (.tmp and .old)
-pub fn clear_old_files(dll_path: &PathBuf) {
+pub fn clear_old_files(dll_path: &Path) {
     let tmp_path = dll_path.with_extension("dll.tmp");
     let old_path = dll_path.with_extension("dll.old");
 
@@ -430,7 +390,7 @@ pub fn draw_update_window(ui: &Ui, state: &mut UpdateState) {
             // Show version info
             if let Some(current) = state.current_version {
                 let _red = ui.push_style_color(StyleColor::Text, [1.0, 0.3, 0.3, 1.0]);
-                ui.text(format!("A new version of Squad Ready is available!"));
+                ui.text("A new version of Squad Ready is available!");
                 ui.text(format!("Current version: {}", version_to_string(&current)));
             }
 
