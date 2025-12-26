@@ -73,7 +73,7 @@ impl Plugin {
             error!("failed to save settings: {:#}", err);
         }
 
-        // Release audio
+        // Release audio - wait for audio thread to terminate
         AUDIO_PLAYER.lock().unwrap().release();
 
         info!("Squad Ready plugin released");

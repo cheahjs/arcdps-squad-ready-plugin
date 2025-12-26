@@ -1,9 +1,10 @@
 use std::{
     sync::mpsc::{Receiver, Sender},
-    thread,
+    thread::{self, JoinHandle},
+    time::Duration,
 };
 
-use log::error;
+use log::{error, info, warn};
 
 use super::AudioTrack;
 
@@ -15,14 +16,16 @@ pub enum AudioSignal {
 
 pub struct AudioPlayer {
     sender: Option<Sender<AudioSignal>>,
+    thread_handle: Option<JoinHandle<()>>,
 }
 
 impl AudioPlayer {
     pub fn new() -> Self {
         let (sender, receiver) = std::sync::mpsc::channel();
-        thread::spawn(move || Self::start_event_loop(receiver));
+        let handle = thread::spawn(move || Self::start_event_loop(receiver));
         Self {
             sender: Some(sender),
+            thread_handle: Some(handle),
         }
     }
 
@@ -42,10 +45,43 @@ impl AudioPlayer {
         }
     }
 
-    pub fn release(&self) {
-        if let Some(sender) = &self.sender {
+    pub fn release(&mut self) {
+        info!("releasing audio player");
+
+        // Send terminate signal to the audio thread
+        if let Some(sender) = self.sender.take() {
             let _ = sender.send(AudioSignal::Terminate);
         }
+
+        // Wait for the audio thread to finish with a timeout
+        if let Some(handle) = self.thread_handle.take() {
+            // Spawn a helper thread to do the join with timeout
+            let join_thread = thread::spawn(move || handle.join());
+
+            // Wait up to 2 seconds for the audio thread to terminate
+            let timeout = Duration::from_secs(2);
+            let start = std::time::Instant::now();
+
+            loop {
+                if join_thread.is_finished() {
+                    match join_thread.join() {
+                        Ok(Ok(())) => info!("audio thread terminated successfully"),
+                        Ok(Err(_)) => warn!("audio thread panicked during shutdown"),
+                        Err(_) => warn!("failed to join audio thread join helper"),
+                    }
+                    break;
+                }
+
+                if start.elapsed() >= timeout {
+                    warn!("audio thread did not terminate within timeout, abandoning");
+                    break;
+                }
+
+                thread::sleep(Duration::from_millis(10));
+            }
+        }
+
+        info!("audio player released");
     }
 
     fn start_event_loop(receiver: Receiver<AudioSignal>) {
@@ -121,7 +157,11 @@ impl AudioPlayer {
                             }
                         }
                     }
-                    AudioSignal::Terminate => break,
+                    AudioSignal::Terminate => {
+                        // Explicitly drop the stream to ensure clean shutdown
+                        drop(stream_data);
+                        break;
+                    }
                 },
                 Err(err) => {
                     error!("failed to receive audio signals: {:#}", err);
