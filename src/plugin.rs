@@ -11,6 +11,7 @@ use crate::file_picker::FilePicker;
 use crate::settings::Settings;
 use crate::settings_ui;
 use crate::squad_tracker::SquadTracker;
+use crate::update_checker::{self, UpdateState};
 
 pub static AUDIO_PLAYER: Lazy<Mutex<AudioPlayer>> = Lazy::new(|| Mutex::new(AudioPlayer::new()));
 
@@ -21,6 +22,7 @@ pub struct Plugin {
     self_account_name: String,
     ready_check_picker: FilePicker,
     squad_ready_picker: FilePicker,
+    update_state: Option<UpdateState>,
     #[cfg(debug_assertions)]
     debug_window_visible: bool,
 }
@@ -34,6 +36,7 @@ impl Plugin {
             self_account_name: String::new(),
             ready_check_picker: FilePicker::new("Select Ready Check Sound".to_string(), None),
             squad_ready_picker: FilePicker::new("Select Squad Ready Sound".to_string(), None),
+            update_state: None,
             #[cfg(debug_assertions)]
             debug_window_visible: true,
         }
@@ -56,8 +59,38 @@ impl Plugin {
         // Initialize audio
         self.init_audio();
 
+        // Initialize update checker
+        self.init_update_checker();
+
         info!("Squad Ready plugin loaded");
         Ok(())
+    }
+
+    fn init_update_checker(&mut self) {
+        // Get current version and DLL path
+        let current_version = update_checker::get_current_version();
+        let dll_path = match update_checker::get_dll_path() {
+            Some(path) => path,
+            None => {
+                warn!("Failed to get DLL path, update checker disabled");
+                return;
+            }
+        };
+
+        if let Some(ref version) = current_version {
+            info!(
+                "Current version: {}",
+                update_checker::version_to_string(version)
+            );
+        }
+
+        // Clear old update files
+        update_checker::clear_old_files(&dll_path);
+
+        // Create update state and start checking for updates
+        let mut state = UpdateState::new(current_version, dll_path);
+        update_checker::check_for_update(&mut state);
+        self.update_state = Some(state);
     }
 
     fn init_audio(&self) {
@@ -71,6 +104,11 @@ impl Plugin {
 
     pub fn release(&mut self) {
         info!("releasing Squad Ready plugin");
+
+        // Wait for update tasks to complete
+        if let Some(ref mut state) = self.update_state {
+            state.finish_pending_tasks();
+        }
 
         // Save settings
         if let Err(err) = self.settings.save() {
@@ -97,10 +135,14 @@ impl Plugin {
             .update_users(users, &self.self_account_name, &self.settings);
     }
 
-    #[cfg_attr(not(debug_assertions), allow(unused_variables))]
     pub fn render_windows(&mut self, ui: &Ui, _not_loading: bool) {
         // Tick the squad tracker (handles nag timer)
         self.squad_tracker.tick(&self.settings);
+
+        // Render update window if update available
+        if let Some(ref mut state) = self.update_state {
+            update_checker::draw_update_window(ui, state);
+        }
 
         // Render debug window in debug builds
         #[cfg(debug_assertions)]

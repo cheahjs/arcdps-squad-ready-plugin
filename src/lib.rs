@@ -5,6 +5,7 @@ mod plugin;
 mod settings;
 mod settings_ui;
 mod squad_tracker;
+mod update_checker;
 
 use arcdps::extras::UserInfoIter;
 use arcdps::imgui::Ui;
