@@ -15,6 +15,7 @@ pub fn draw(
     ready_check_picker: &mut FilePicker,
     squad_ready_picker: &mut FilePicker,
     extras_loaded: bool,
+    #[cfg(debug_assertions)] debug_window_visible: &mut bool,
 ) {
     ui.separator();
     ui.spacing();
@@ -37,6 +38,9 @@ pub fn draw(
     ui.separator();
     ui.spacing();
 
+    #[cfg(debug_assertions)]
+    draw_status(ui, settings, extras_loaded, debug_window_visible);
+    #[cfg(not(debug_assertions))]
     draw_status(ui, settings, extras_loaded);
 
     ui.spacing();
@@ -206,7 +210,25 @@ fn draw_update_settings(ui: &Ui, settings: &mut Settings) {
     }
 }
 
+#[cfg(debug_assertions)]
+fn draw_status(
+    ui: &Ui,
+    settings: &mut Settings,
+    extras_loaded: bool,
+    debug_window_visible: &mut bool,
+) {
+    draw_status_common(ui, settings, extras_loaded);
+
+    // Debug window toggle (only in debug builds)
+    ui.checkbox("Show Debug Window", debug_window_visible);
+}
+
+#[cfg(not(debug_assertions))]
 fn draw_status(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
+    draw_status_common(ui, settings, extras_loaded);
+}
+
+fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
     ui.text_disabled("Status");
 
     // Unofficial extras status

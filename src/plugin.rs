@@ -199,6 +199,16 @@ impl Plugin {
     }
 
     pub fn render_settings(&mut self, ui: &Ui) {
+        #[cfg(debug_assertions)]
+        settings_ui::draw(
+            ui,
+            &mut self.settings,
+            &mut self.ready_check_picker,
+            &mut self.squad_ready_picker,
+            self.extras_loaded,
+            &mut self.debug_window_visible,
+        );
+        #[cfg(not(debug_assertions))]
         settings_ui::draw(
             ui,
             &mut self.settings,
