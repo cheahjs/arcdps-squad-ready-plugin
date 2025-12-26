@@ -39,6 +39,8 @@ fn get_available_drives() -> Vec<PathBuf> {
 struct CachedEntry {
     path: PathBuf,
     name: String,
+    /// Pre-formatted display name to avoid allocations during render
+    display_name: String,
     is_dir: bool,
 }
 
@@ -46,8 +48,37 @@ struct CachedEntry {
 struct DirCache {
     path: PathBuf,
     entries: Vec<CachedEntry>,
+    /// Filtered entries cache - indices into entries Vec
+    filtered_indices: Vec<usize>,
+    /// The filter text used to compute filtered_indices
+    filter_text: String,
     show_hidden: bool,
     error: Option<String>,
+}
+
+/// Cached drive list to avoid system calls every frame
+struct DriveCache {
+    drives: Vec<PathBuf>,
+    /// Timestamp of last refresh (we refresh every ~5 seconds)
+    last_refresh: std::time::Instant,
+}
+
+impl DriveCache {
+    fn new() -> Self {
+        Self {
+            drives: get_available_drives(),
+            last_refresh: std::time::Instant::now(),
+        }
+    }
+
+    fn get(&mut self) -> &[PathBuf] {
+        // Refresh drive list every 5 seconds
+        if self.last_refresh.elapsed().as_secs() > 5 {
+            self.drives = get_available_drives();
+            self.last_refresh = std::time::Instant::now();
+        }
+        &self.drives
+    }
 }
 
 impl DirCache {
@@ -55,6 +86,8 @@ impl DirCache {
         Self {
             path: PathBuf::new(),
             entries: Vec::new(),
+            filtered_indices: Vec::new(),
+            filter_text: String::new(),
             show_hidden: false,
             error: None,
         }
@@ -69,6 +102,8 @@ impl DirCache {
         self.path = current_dir.clone();
         self.show_hidden = show_hidden;
         self.entries.clear();
+        self.filtered_indices.clear();
+        self.filter_text.clear();
         self.error = None;
 
         match fs::read_dir(current_dir) {
@@ -86,7 +121,12 @@ impl DirCache {
                         let path = e.path();
                         let is_dir = path.is_dir();
                         let name = e.file_name().to_string_lossy().to_string();
-                        CachedEntry { path, name, is_dir }
+                        let display_name = if is_dir {
+                            format!("[dir]  {}", name)
+                        } else {
+                            format!("[file] {}", name)
+                        };
+                        CachedEntry { path, name, display_name, is_dir }
                     })
                     .collect();
 
@@ -102,6 +142,8 @@ impl DirCache {
                 });
 
                 self.entries = entries;
+                // Initialize filtered indices to show all entries
+                self.filtered_indices = (0..self.entries.len()).collect();
             }
             Err(e) => {
                 error!("failed to read directory: {}", e);
@@ -114,6 +156,35 @@ impl DirCache {
     fn invalidate(&mut self) {
         self.path = PathBuf::new();
     }
+
+    /// Update filtered indices if filter text changed
+    fn update_filter(&mut self, filter_text: &str) {
+        if self.filter_text == filter_text {
+            return; // Filter unchanged
+        }
+
+        self.filter_text = filter_text.to_string();
+        let filter_lower = filter_text.to_lowercase();
+
+        if filter_lower.is_empty() {
+            // No filter - show all entries
+            self.filtered_indices = (0..self.entries.len()).collect();
+        } else {
+            // Filter entries by name
+            self.filtered_indices = self
+                .entries
+                .iter()
+                .enumerate()
+                .filter(|(_, e)| e.name.to_lowercase().contains(&filter_lower))
+                .map(|(i, _)| i)
+                .collect();
+        }
+    }
+
+    /// Get an iterator over filtered entries
+    fn filtered_entries(&self) -> impl Iterator<Item = &CachedEntry> {
+        self.filtered_indices.iter().map(|&i| &self.entries[i])
+    }
 }
 
 pub struct FilePicker {
@@ -123,6 +194,7 @@ pub struct FilePicker {
     pub show_hidden_files: bool,
     filter_text: String,
     cache: DirCache,
+    drive_cache: DriveCache,
 }
 
 impl FilePicker {
@@ -138,6 +210,7 @@ impl FilePicker {
             show_hidden_files: false,
             filter_text: String::new(),
             cache: DirCache::new(),
+            drive_cache: DriveCache::new(),
         }
     }
 
@@ -157,33 +230,26 @@ impl FilePicker {
         self.cache
             .refresh_if_needed(&self.current_dir, self.show_hidden_files);
 
+        // Update filter (only does work if filter text changed)
+        self.cache.update_filter(&self.filter_text);
+
         let mut selected_path = None;
         let mut window_open = self.is_open;
         let mut should_close = false;
         let mut new_dir: Option<PathBuf> = None;
         let mut toggle_hidden = false;
 
-        // Clone data needed in closure
-        let current_dir_clone = self.current_dir.clone();
+        // Borrow data needed in closure - avoid cloning where possible
+        let current_dir = &self.current_dir;
         let mut show_hidden_files = self.show_hidden_files;
         let mut filter_text = self.filter_text.clone();
-        let filter_lower = filter_text.to_lowercase();
 
-        // Filter cached entries based on filter text
-        let cache_entries: Vec<CachedEntry> = self
-            .cache
-            .entries
-            .iter()
-            .filter(|e| {
-                if filter_lower.is_empty() {
-                    true
-                } else {
-                    e.name.to_lowercase().contains(&filter_lower)
-                }
-            })
-            .cloned()
-            .collect();
-        let cache_error = self.cache.error.clone();
+        // Get cached drives (refreshes periodically, not every frame)
+        let drives = self.drive_cache.get();
+
+        // Borrow cache data for use in closure
+        let cache_error = &self.cache.error;
+        let cache = &self.cache;
 
         Window::new(&self.title)
             .opened(&mut window_open)
@@ -197,8 +263,7 @@ impl FilePicker {
                     .begin(ui)
                 {
                     // Drive selector dropdown
-                    let drives = get_available_drives();
-                    let current_drive = current_dir_clone
+                    let current_drive = current_dir
                         .components()
                         .next()
                         .map(|c| {
@@ -211,9 +276,10 @@ impl FilePicker {
                         })
                         .unwrap_or_default();
 
+
                     ui.set_next_item_width(60.0);
                     if let Some(_combo) = ui.begin_combo("##drive", &current_drive) {
-                        for drive in &drives {
+                        for drive in drives {
                             let drive_str = drive.to_string_lossy();
                             let is_selected = drive_str == current_drive;
                             if Selectable::new(&drive_str).selected(is_selected).build(ui)
@@ -228,17 +294,14 @@ impl FilePicker {
                     ui.text("Path:");
                     ui.same_line();
 
-                    let components: Vec<PathBuf> =
-                        current_dir_clone.iter().map(PathBuf::from).collect();
-
-                    for (i, comp) in components.iter().enumerate() {
+                    // Iterate over path components directly to avoid Vec allocation
+                    let mut accumulated_path = PathBuf::new();
+                    for (i, comp) in current_dir.iter().enumerate() {
                         let name = comp.to_string_lossy();
+                        accumulated_path.push(comp);
                         if ui.button(format!("{}##{}", name, i)) {
-                            // Rebuild path up to this component
-                            let mut nav_path = PathBuf::new();
-                            for component in components.iter().take(i + 1) {
-                                nav_path.push(component);
-                            }
+                            // Clone the path for navigation
+                            let mut nav_path = accumulated_path.clone();
                             // On Windows, "C:" alone refers to CWD on that drive, not the root.
                             // We need "C:\" to refer to the root, so add a separator if needed.
                             if i == 0 && nav_path.to_string_lossy().ends_with(':') {
@@ -268,12 +331,14 @@ impl FilePicker {
                     if let Some(ref err) = cache_error {
                         ui.text_colored([1.0, 0.0, 0.0, 1.0], err);
                     } else {
-                        for entry in &cache_entries {
+                        // Use cached filtered entries and pre-computed display names
+                        for entry in cache.filtered_entries() {
+                            // Use pre-computed display_name to avoid format! every frame
                             if entry.is_dir {
-                                if ui.button(format!("[dir]  {}", entry.name)) {
+                                if ui.button(&entry.display_name) {
                                     new_dir = Some(entry.path.clone());
                                 }
-                            } else if ui.button(format!("[file] {}", entry.name)) {
+                            } else if ui.button(&entry.display_name) {
                                 selected_path = Some(entry.path.clone());
                                 should_close = true;
                             }
@@ -288,7 +353,7 @@ impl FilePicker {
                     .begin(ui)
                 {
                     if ui.button("Back") {
-                        if let Some(parent) = current_dir_clone.parent() {
+                        if let Some(parent) = current_dir.parent() {
                             let parent_path = parent.to_path_buf();
                             // Only navigate if parent is a valid directory
                             if parent_path.is_dir() {
@@ -302,7 +367,7 @@ impl FilePicker {
                     }
                     ui.same_line();
                     if ui.button("Refresh") {
-                        new_dir = Some(current_dir_clone.clone()); // Force cache refresh
+                        new_dir = Some(current_dir.to_path_buf()); // Force cache refresh
                     }
                     ui.same_line();
                     if ui.button("Cancel") {
