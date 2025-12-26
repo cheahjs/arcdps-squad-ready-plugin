@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: arcdps-squad-ready-debug
-          path: target/debug/arcdps_squad_ready.dll
+          path: target/x86_64-pc-windows-msvc/debug/arcdps_squad_ready.dll
 
   sign-debug:
     name: Sign Debug Build
@@ -135,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: arcdps-squad-ready-release
-          path: target/release/arcdps_squad_ready.dll
+          path: target/x86_64-pc-windows-msvc/release/arcdps_squad_ready.dll
 
   sign-and-release:
     name: Sign and Release
