@@ -186,20 +186,28 @@ struct GitHubAsset {
 struct GitHubRelease {
     tag_name: String,
     assets: Vec<GitHubAsset>,
+    #[serde(default)]
+    #[allow(dead_code)]
+    prerelease: bool,
 }
 
 /// Check for updates from GitHub releases
-pub fn check_for_update(state: &mut UpdateState) {
+pub fn check_for_update(state: &mut UpdateState, include_prereleases: bool) {
     let status = Arc::clone(&state.status);
     let new_version = Arc::clone(&state.new_version);
     let download_url = Arc::clone(&state.download_url);
     let current_version = state.current_version;
 
     let handle = thread::spawn(move || {
-        let url = format!(
-            "https://api.github.com/repos/{}/releases/latest",
-            GITHUB_REPO
-        );
+        // Use different endpoint based on whether we want prereleases
+        let url = if include_prereleases {
+            format!("https://api.github.com/repos/{}/releases", GITHUB_REPO)
+        } else {
+            format!(
+                "https://api.github.com/repos/{}/releases/latest",
+                GITHUB_REPO
+            )
+        };
 
         info!("Checking for updates at {}", url);
 
@@ -215,11 +223,35 @@ pub fn check_for_update(state: &mut UpdateState) {
             }
         };
 
-        let release: GitHubRelease = match serde_json::from_str(response.as_str().unwrap_or("")) {
-            Ok(r) => r,
-            Err(e) => {
-                error!("Failed to parse release JSON: {}", e);
-                return;
+        // Parse the release(s) - /releases returns array, /releases/latest returns single object
+        let release: GitHubRelease = if include_prereleases {
+            let releases: Vec<GitHubRelease> =
+                match serde_json::from_str(response.as_str().unwrap_or("")) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        error!("Failed to parse releases JSON: {}", e);
+                        return;
+                    }
+                };
+
+            // Get the first (most recent) release that has a .dll asset
+            match releases
+                .into_iter()
+                .find(|r| r.assets.iter().any(|a| a.name.ends_with(".dll")))
+            {
+                Some(r) => r,
+                None => {
+                    error!("No releases with .dll assets found");
+                    return;
+                }
+            }
+        } else {
+            match serde_json::from_str(response.as_str().unwrap_or("")) {
+                Ok(r) => r,
+                Err(e) => {
+                    error!("Failed to parse release JSON: {}", e);
+                    return;
+                }
             }
         };
 

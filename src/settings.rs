@@ -23,7 +23,7 @@ pub struct Settings {
     #[serde(default = "default_volume")]
     pub squad_ready_volume: i32,
 
-    #[serde(default = "default_true")]
+#[serde(default = "default_true")]
     pub flash_window: bool,
 
     #[serde(default)]
@@ -37,6 +37,12 @@ pub struct Settings {
 
     #[serde(default)]
     pub audio_output_device: Option<String>,
+
+    #[serde(default = "default_true")]
+    pub check_for_updates: bool,
+
+    #[serde(default)]
+    pub include_prereleases: bool,
 }
 
 fn default_volume() -> i32 {
@@ -64,6 +70,8 @@ impl Default for Settings {
             ready_check_nag_in_combat: false,
             ready_check_nag_interval_seconds: 5.0,
             audio_output_device: None,
+            check_for_updates: true,
+            include_prereleases: false,
         }
     }
 }

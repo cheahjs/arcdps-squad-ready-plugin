@@ -67,6 +67,12 @@ impl Plugin {
     }
 
     fn init_update_checker(&mut self) {
+        // Skip if updates disabled
+        if !self.settings.check_for_updates {
+            info!("Update checking disabled in settings");
+            return;
+        }
+
         // Get current version and DLL path
         let current_version = update_checker::get_current_version();
         let dll_path = match update_checker::get_dll_path() {
@@ -87,7 +93,7 @@ impl Plugin {
 
         // Create update state and start checking for updates
         let mut state = UpdateState::new(Some(current_version), dll_path);
-        update_checker::check_for_update(&mut state);
+        update_checker::check_for_update(&mut state, self.settings.include_prereleases);
         self.update_state = Some(state);
     }
 

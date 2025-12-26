@@ -38,6 +38,12 @@ pub fn draw(
     ui.spacing();
 
     draw_status(ui, settings, extras_loaded);
+
+    ui.spacing();
+    ui.separator();
+    ui.spacing();
+
+    draw_update_settings(ui, settings);
 }
 
 fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
@@ -182,6 +188,22 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
 
 fn draw_global_settings(ui: &Ui, settings: &mut Settings) {
     ui.checkbox("Flash window and tray icon", &mut settings.flash_window);
+}
+
+fn draw_update_settings(ui: &Ui, settings: &mut Settings) {
+    ui.text_disabled("Updates");
+
+    ui.checkbox("Check for updates", &mut settings.check_for_updates);
+
+    ui.checkbox(
+        "Include pre-release versions",
+        &mut settings.include_prereleases,
+    );
+    if ui.is_item_hovered() {
+        ui.tooltip_text(
+            "When enabled, includes beta/alpha releases when checking for updates. Requires restart.",
+        );
+    }
 }
 
 fn draw_status(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
