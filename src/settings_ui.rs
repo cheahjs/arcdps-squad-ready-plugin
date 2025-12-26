@@ -108,7 +108,7 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         let mut track = AudioTrack::new();
         let path = settings.ready_check_path.as_deref().unwrap_or("");
         let _ = track.load_from_path(path, sounds::READY_CHECK, settings.ready_check_volume);
-        if !track.status_message.is_empty() && track.status_message != "Using default sound" {
+        if !track.is_valid() && !track.status_message.is_empty() {
             ui.same_line();
             ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
         }
@@ -183,7 +183,7 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         let mut track = AudioTrack::new();
         let path = settings.squad_ready_path.as_deref().unwrap_or("");
         let _ = track.load_from_path(path, sounds::SQUAD_READY, settings.squad_ready_volume);
-        if !track.status_message.is_empty() && track.status_message != "Using default sound" {
+        if !track.is_valid() && !track.status_message.is_empty() {
             ui.same_line();
             ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
         }
