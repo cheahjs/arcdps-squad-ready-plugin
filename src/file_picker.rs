@@ -126,7 +126,12 @@ impl DirCache {
                         } else {
                             format!("[file] {}", name)
                         };
-                        CachedEntry { path, name, display_name, is_dir }
+                        CachedEntry {
+                            path,
+                            name,
+                            display_name,
+                            is_dir,
+                        }
                     })
                     .collect();
 
@@ -275,7 +280,6 @@ impl FilePicker {
                             p.to_string_lossy().to_string()
                         })
                         .unwrap_or_default();
-
 
                     ui.set_next_item_width(60.0);
                     if let Some(_combo) = ui.begin_combo("##drive", &current_drive) {
