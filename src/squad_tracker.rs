@@ -123,6 +123,25 @@ struct CachedUserInfo {
     ready_status: bool,
 }
 
+/// Debug information for the squad tracker, used in debug builds to display state
+#[cfg(debug_assertions)]
+#[derive(Clone, Debug)]
+pub struct DebugPlayerInfo {
+    pub role: String,
+    pub subgroup: u8,
+    pub ready_status: bool,
+}
+
+#[cfg(debug_assertions)]
+#[derive(Clone, Debug, Default)]
+pub struct DebugInfo {
+    pub in_ready_check: bool,
+    pub self_readied: bool,
+    pub ready_check_elapsed_secs: Option<f32>,
+    pub time_until_nag_secs: Option<f32>,
+    pub cached_players: Vec<(String, DebugPlayerInfo)>,
+}
+
 impl SquadTracker<RealSquadNotifier> {
     pub fn new() -> Self {
         Self::with_notifier(RealSquadNotifier)
@@ -290,6 +309,47 @@ impl<N: SquadNotifier> SquadTracker<N> {
         }
         debug!("all players are readied");
         true
+    }
+
+    /// Get debug information about the current state, only used in debug builds
+    #[cfg(debug_assertions)]
+    pub fn get_debug_info(&self) -> DebugInfo {
+        let now = Instant::now();
+
+        let ready_check_elapsed_secs = self
+            .ready_check_start_time
+            .map(|start| now.duration_since(start).as_secs_f32());
+
+        let time_until_nag_secs = self.ready_check_nag_time.and_then(|nag_time| {
+            if nag_time > now {
+                Some((nag_time - now).as_secs_f32())
+            } else {
+                None
+            }
+        });
+
+        let cached_players = self
+            .cached_players
+            .iter()
+            .map(|(name, info)| {
+                (
+                    name.clone(),
+                    DebugPlayerInfo {
+                        role: format!("{:?}", info.role),
+                        subgroup: info.subgroup,
+                        ready_status: info.ready_status,
+                    },
+                )
+            })
+            .collect();
+
+        DebugInfo {
+            in_ready_check: self.in_ready_check,
+            self_readied: self.self_readied,
+            ready_check_elapsed_secs,
+            time_until_nag_secs,
+            cached_players,
+        }
     }
 }
 
