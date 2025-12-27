@@ -27,6 +27,31 @@ arcdps::export! {
     imgui,
     extras_init,
     extras_squad_update,
+    raw_wnd_nofilter,
+}
+
+/// Raw WndProc callback to capture the game's window handle.
+/// This is called for every window message, we use it to get and store the HWND.
+#[cfg(windows)]
+unsafe extern "C-unwind" fn raw_wnd_nofilter(
+    h_wnd: windows::Win32::Foundation::HWND,
+    u_msg: u32,
+    _w_param: windows::Win32::Foundation::WPARAM,
+    _l_param: windows::Win32::Foundation::LPARAM,
+) -> u32 {
+    plugin::set_game_hwnd(h_wnd);
+    u_msg
+}
+
+/// Stub for non-Windows platforms  
+#[cfg(not(windows))]
+unsafe extern "C-unwind" fn raw_wnd_nofilter(
+    _h_wnd: usize,
+    u_msg: u32,
+    _w_param: usize,
+    _l_param: isize,
+) -> u32 {
+    u_msg
 }
 
 fn imgui(ui: &Ui, not_loading_or_character_selection: bool) {

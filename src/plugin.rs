@@ -15,6 +15,37 @@ use crate::update_checker::{self, UpdateState};
 
 pub static AUDIO_PLAYER: Lazy<Mutex<AudioPlayer>> = Lazy::new(|| Mutex::new(AudioPlayer::new()));
 
+// Storage for the game's window handle, captured from arcdps wnd callback
+// We store as a raw pointer because HWND is not Send/Sync
+#[cfg(windows)]
+use std::sync::atomic::{AtomicPtr, Ordering};
+
+#[cfg(windows)]
+static GAME_HWND: AtomicPtr<std::ffi::c_void> = AtomicPtr::new(std::ptr::null_mut());
+
+/// Set the game window handle (called once from raw_wnd_nofilter callback)
+#[cfg(windows)]
+pub fn set_game_hwnd(hwnd: windows::Win32::Foundation::HWND) {
+    // Only set if not already set (compare_exchange from null)
+    let _ = GAME_HWND.compare_exchange(
+        std::ptr::null_mut(),
+        hwnd.0,
+        Ordering::SeqCst,
+        Ordering::Relaxed,
+    );
+}
+
+/// Get the stored game window handle
+#[cfg(windows)]
+pub fn get_game_hwnd() -> Option<windows::Win32::Foundation::HWND> {
+    let ptr = GAME_HWND.load(Ordering::SeqCst);
+    if ptr.is_null() {
+        None
+    } else {
+        Some(windows::Win32::Foundation::HWND(ptr))
+    }
+}
+
 pub struct Plugin {
     settings: Settings,
     squad_tracker: SquadTracker,
@@ -45,7 +76,6 @@ impl Plugin {
     pub fn load(&mut self) -> Result<()> {
         info!("loading Squad Ready plugin");
 
-        // Load settings
         match Settings::load() {
             Ok(settings) => {
                 self.settings = settings;
@@ -56,10 +86,7 @@ impl Plugin {
             }
         }
 
-        // Initialize audio
         self.init_audio();
-
-        // Initialize update checker
         self.init_update_checker();
 
         info!("Squad Ready plugin loaded");
@@ -67,13 +94,11 @@ impl Plugin {
     }
 
     fn init_update_checker(&mut self) {
-        // Skip if updates disabled
         if !self.settings.check_for_updates {
             info!("Update checking disabled in settings");
             return;
         }
 
-        // Get current version and DLL path
         let current_version = update_checker::get_current_version();
         let dll_path = match update_checker::get_dll_path() {
             Some(path) => path,
@@ -88,10 +113,8 @@ impl Plugin {
             update_checker::version_to_string(&current_version)
         );
 
-        // Clear old update files
         update_checker::clear_old_files(&dll_path);
 
-        // Create update state and start checking for updates
         let mut state = UpdateState::new(Some(current_version), dll_path);
         update_checker::check_for_update(&mut state, self.settings.include_prereleases);
         self.update_state = Some(state);
@@ -100,7 +123,6 @@ impl Plugin {
     fn init_audio(&self) {
         let player = AUDIO_PLAYER.lock().unwrap();
 
-        // Set device if configured
         if let Some(ref device) = self.settings.audio_output_device {
             player.set_device(Some(device.clone()));
         }
@@ -109,12 +131,9 @@ impl Plugin {
     pub fn release(&mut self) {
         info!("releasing Squad Ready plugin");
 
-        // Wait for update tasks to complete
         if let Some(ref mut state) = self.update_state {
             state.finish_pending_tasks();
         }
-
-        // Save settings
         if let Err(err) = self.settings.save() {
             error!("failed to save settings: {:#}", err);
         }
@@ -140,15 +159,11 @@ impl Plugin {
     }
 
     pub fn render_windows(&mut self, ui: &Ui, _not_loading: bool) {
-        // Tick the squad tracker (handles nag timer)
         self.squad_tracker.tick(&self.settings);
 
-        // Render update window if update available
         if let Some(ref mut state) = self.update_state {
             update_checker::draw_update_window(ui, state);
         }
-
-        // Render debug window in debug builds
         #[cfg(debug_assertions)]
         self.render_debug_window(ui);
     }

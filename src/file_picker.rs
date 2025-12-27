@@ -6,7 +6,7 @@ use std::cmp::Ordering;
 use std::fs;
 use std::path::PathBuf;
 
-/// Get available drive letters on Windows (e.g., ["C:\\", "D:\\", ...])
+/// Get available drive letters on Windows (e.g., ["C:\", "D:\", ...])
 #[cfg(windows)]
 fn get_available_drives() -> Vec<PathBuf> {
     use windows::Win32::Storage::FileSystem::GetLogicalDrives;
@@ -39,7 +39,6 @@ fn get_available_drives() -> Vec<PathBuf> {
 struct CachedEntry {
     path: PathBuf,
     name: String,
-    /// Pre-formatted display name to avoid allocations during render
     display_name: String,
     is_dir: bool,
 }
@@ -59,7 +58,6 @@ struct DirCache {
 /// Cached drive list to avoid system calls every frame
 struct DriveCache {
     drives: Vec<PathBuf>,
-    /// Timestamp of last refresh (we refresh every ~5 seconds)
     last_refresh: std::time::Instant,
 }
 
@@ -72,7 +70,6 @@ impl DriveCache {
     }
 
     fn get(&mut self) -> &[PathBuf] {
-        // Refresh drive list every 5 seconds
         if self.last_refresh.elapsed().as_secs() > 5 {
             self.drives = get_available_drives();
             self.last_refresh = std::time::Instant::now();
@@ -96,7 +93,7 @@ impl DirCache {
     /// Refresh the cache if the path or hidden files setting changed
     fn refresh_if_needed(&mut self, current_dir: &PathBuf, show_hidden: bool) {
         if self.path == *current_dir && self.show_hidden == show_hidden {
-            return; // Cache is still valid
+            return;
         }
 
         self.path = current_dir.clone();
@@ -147,7 +144,6 @@ impl DirCache {
                 });
 
                 self.entries = entries;
-                // Initialize filtered indices to show all entries
                 self.filtered_indices = (0..self.entries.len()).collect();
             }
             Err(e) => {
@@ -165,17 +161,15 @@ impl DirCache {
     /// Update filtered indices if filter text changed
     fn update_filter(&mut self, filter_text: &str) {
         if self.filter_text == filter_text {
-            return; // Filter unchanged
+            return;
         }
 
         self.filter_text = filter_text.to_string();
         let filter_lower = filter_text.to_lowercase();
 
         if filter_lower.is_empty() {
-            // No filter - show all entries
             self.filtered_indices = (0..self.entries.len()).collect();
         } else {
-            // Filter entries by name
             self.filtered_indices = self
                 .entries
                 .iter()
@@ -221,7 +215,6 @@ impl FilePicker {
 
     pub fn open(&mut self) {
         self.is_open = true;
-        // Invalidate cache and clear filter when opening
         self.cache.invalidate();
         self.filter_text.clear();
     }
@@ -231,11 +224,9 @@ impl FilePicker {
             return None;
         }
 
-        // Refresh cache if needed (only does work if path/settings changed)
         self.cache
             .refresh_if_needed(&self.current_dir, self.show_hidden_files);
 
-        // Update filter (only does work if filter text changed)
         self.cache.update_filter(&self.filter_text);
 
         let mut selected_path = None;
@@ -244,15 +235,12 @@ impl FilePicker {
         let mut new_dir: Option<PathBuf> = None;
         let mut toggle_hidden = false;
 
-        // Borrow data needed in closure - avoid cloning where possible
         let current_dir = &self.current_dir;
         let mut show_hidden_files = self.show_hidden_files;
         let mut filter_text = self.filter_text.clone();
 
-        // Get cached drives (refreshes periodically, not every frame)
         let drives = self.drive_cache.get();
 
-        // Borrow cache data for use in closure
         let cache_error = &self.cache.error;
         let cache = &self.cache;
 
@@ -298,20 +286,17 @@ impl FilePicker {
                     ui.text("Path:");
                     ui.same_line();
 
-                    // Iterate over path components directly to avoid Vec allocation
                     let mut accumulated_path = PathBuf::new();
                     for (i, comp) in current_dir.iter().enumerate() {
                         let name = comp.to_string_lossy();
                         accumulated_path.push(comp);
                         if ui.button(format!("{}##{}", name, i)) {
-                            // Clone the path for navigation
                             let mut nav_path = accumulated_path.clone();
                             // On Windows, "C:" alone refers to CWD on that drive, not the root.
                             // We need "C:\" to refer to the root, so add a separator if needed.
                             if i == 0 && nav_path.to_string_lossy().ends_with(':') {
                                 nav_path.push(std::path::MAIN_SEPARATOR.to_string());
                             }
-                            // Only navigate if the path is a valid directory
                             if nav_path.is_dir() {
                                 new_dir = Some(nav_path);
                             }
@@ -335,9 +320,7 @@ impl FilePicker {
                     if let Some(ref err) = cache_error {
                         ui.text_colored([1.0, 0.0, 0.0, 1.0], err);
                     } else {
-                        // Use cached filtered entries and pre-computed display names
                         for entry in cache.filtered_entries() {
-                            // Use pre-computed display_name to avoid format! every frame
                             if entry.is_dir {
                                 if ui.button(&entry.display_name) {
                                     new_dir = Some(entry.path.clone());
@@ -359,7 +342,6 @@ impl FilePicker {
                     if ui.button("Back") {
                         if let Some(parent) = current_dir.parent() {
                             let parent_path = parent.to_path_buf();
-                            // Only navigate if parent is a valid directory
                             if parent_path.is_dir() {
                                 new_dir = Some(parent_path);
                             }
@@ -371,7 +353,7 @@ impl FilePicker {
                     }
                     ui.same_line();
                     if ui.button("Refresh") {
-                        new_dir = Some(current_dir.to_path_buf()); // Force cache refresh
+                        new_dir = Some(current_dir.to_path_buf());
                     }
                     ui.same_line();
                     if ui.button("Cancel") {
@@ -380,17 +362,14 @@ impl FilePicker {
                 }
             });
 
-        // Apply directory navigation outside of closure
         if let Some(dir) = new_dir {
             self.current_dir = dir;
             self.cache.invalidate();
-            self.filter_text.clear(); // Clear filter when navigating
+            self.filter_text.clear();
         } else {
-            // Update filter text if it changed
             self.filter_text = filter_text;
         }
 
-        // Apply hidden files toggle
         if toggle_hidden {
             self.show_hidden_files = show_hidden_files;
         }

@@ -63,13 +63,13 @@ impl SquadNotifier for RealSquadNotifier {
         // Flash the window using Windows API
         #[cfg(windows)]
         {
+            use crate::plugin::get_game_hwnd;
             use windows::Win32::UI::WindowsAndMessaging::{
-                FlashWindowEx, GetForegroundWindow, FLASHWINFO, FLASHW_ALL, FLASHW_TIMERNOFG,
+                FlashWindowEx, FLASHWINFO, FLASHW_ALL, FLASHW_TIMERNOFG,
             };
 
-            // Get the foreground window
-            let hwnd = unsafe { GetForegroundWindow() };
-            if !hwnd.is_invalid() {
+            // Get the game window handle (captured from arcdps wnd callback)
+            if let Some(hwnd) = get_game_hwnd() {
                 let flash_info = FLASHWINFO {
                     cbSize: std::mem::size_of::<FLASHWINFO>() as u32,
                     hwnd,
