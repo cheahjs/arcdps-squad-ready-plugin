@@ -69,7 +69,7 @@ impl Plugin {
             squad_ready_picker: FilePicker::new("Select Squad Ready Sound".to_string(), None),
             update_state: None,
             #[cfg(debug_assertions)]
-            debug_window_visible: true,
+            debug_window_visible: false,
         }
     }
 
