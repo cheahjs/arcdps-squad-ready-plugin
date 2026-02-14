@@ -444,7 +444,7 @@ pub fn draw_update_window(ui: &Ui, state: &mut UpdateState) {
             match status {
                 UpdateStatus::UpdateAvailable => {
                     ui.same_line();
-                    if ui.button("Auto Update") {
+                    if ui.button("Install Update") {
                         perform_update(state);
                     }
                 }
