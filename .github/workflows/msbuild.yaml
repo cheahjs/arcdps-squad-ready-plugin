@@ -78,7 +78,9 @@ jobs:
     name: Sign and Release
     runs-on: windows-2022
     needs: build
-    environment: release
+    environment:
+      name: release
+      deployment: false
     permissions:
       contents: write
       id-token: write
