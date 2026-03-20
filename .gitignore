@@ -399,3 +399,7 @@ FodyWeavers.xsd
 
 # vcpkg
 vcpkg_installed/
+
+# Rust build artifacts
+/target/
+**/*.rs.bk
