@@ -43,6 +43,23 @@ pub struct Settings {
 
     #[serde(default)]
     pub include_prereleases: bool,
+
+    /// Cached status message for the ready check sound (not serialized)
+    #[serde(skip)]
+    pub ready_check_status: Option<SoundStatus>,
+
+    /// Cached status message for the squad ready sound (not serialized)
+    #[serde(skip)]
+    pub squad_ready_status: Option<SoundStatus>,
+}
+
+/// Cached sound validation status to avoid re-loading every frame
+#[derive(Debug, Clone)]
+pub struct SoundStatus {
+    pub path: Option<String>,
+    pub volume: i32,
+    pub valid: bool,
+    pub message: String,
 }
 
 fn default_volume() -> i32 {
@@ -72,6 +89,8 @@ impl Default for Settings {
             audio_output_device: None,
             check_for_updates: true,
             include_prereleases: false,
+            ready_check_status: None,
+            squad_ready_status: None,
         }
     }
 }
