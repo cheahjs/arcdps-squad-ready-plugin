@@ -4,10 +4,9 @@ use arcdps::extras::UserInfoIter;
 use arcdps::imgui::Ui;
 use log::*;
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
+use parking_lot::Mutex;
 
 use crate::audio::player::AudioPlayer;
-use crate::MutexExt;
 use crate::file_picker::FilePicker;
 use crate::settings::Settings;
 use crate::settings_ui;
@@ -122,7 +121,7 @@ impl Plugin {
     }
 
     fn init_audio(&self) {
-        let player = AUDIO_PLAYER.lock_or_recover();
+        let player = AUDIO_PLAYER.lock();
 
         if let Some(ref device) = self.settings.audio_output_device {
             player.set_device(Some(device.clone()));
@@ -140,7 +139,7 @@ impl Plugin {
         }
 
         // Release audio - wait for audio thread to terminate
-        AUDIO_PLAYER.lock_or_recover().release();
+        AUDIO_PLAYER.lock().release();
 
         info!("Squad Ready plugin released");
     }
