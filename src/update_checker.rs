@@ -4,7 +4,8 @@ use serde::Deserialize;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use windows::Win32::System::LibraryLoader::GetModuleFileNameW;
 
@@ -62,11 +63,11 @@ impl UpdateState {
     }
 
     pub fn status(&self) -> UpdateStatus {
-        *self.status.lock().unwrap()
+        *self.status.lock()
     }
 
     pub fn set_status(&self, status: UpdateStatus) {
-        *self.status.lock().unwrap() = status;
+        *self.status.lock() = status;
     }
 
     /// Wait for all pending tasks to complete
@@ -298,9 +299,9 @@ pub fn check_for_update(state: &mut UpdateState, include_prereleases: bool) {
         );
 
         // Update state
-        *new_version.lock().unwrap() = Some(release_version);
-        *download_url.lock().unwrap() = Some(dll_url);
-        *status.lock().unwrap() = UpdateStatus::UpdateAvailable;
+        *new_version.lock() = Some(release_version);
+        *download_url.lock() = Some(dll_url);
+        *status.lock() = UpdateStatus::UpdateAvailable;
     });
 
     state.tasks.push(handle);
@@ -316,14 +317,14 @@ pub fn perform_update(state: &mut UpdateState) {
     state.set_status(UpdateStatus::UpdateInProgress);
 
     let install_path = state.install_path.clone();
-    let download_url = state.download_url.lock().unwrap().clone();
+    let download_url = state.download_url.lock().clone();
     let status = Arc::clone(&state.status);
     let error_message = Arc::clone(&state.error_message);
 
     let Some(url) = download_url else {
         error!("No download URL available");
-        *status.lock().unwrap() = UpdateStatus::UpdateError;
-        *error_message.lock().unwrap() = Some("No download URL available".to_string());
+        *status.lock() = UpdateStatus::UpdateError;
+        *error_message.lock() = Some("No download URL available".to_string());
         return;
     };
 
@@ -341,8 +342,8 @@ pub fn perform_update(state: &mut UpdateState) {
             Ok(resp) => resp,
             Err(e) => {
                 error!("Failed to download update: {}", e);
-                *status.lock().unwrap() = UpdateStatus::UpdateError;
-                *error_message.lock().unwrap() = Some(format!("Download failed: {}", e));
+                *status.lock() = UpdateStatus::UpdateError;
+                *error_message.lock() = Some(format!("Download failed: {}", e));
                 return;
             }
         };
@@ -352,16 +353,16 @@ pub fn perform_update(state: &mut UpdateState) {
             Ok(f) => f,
             Err(e) => {
                 error!("Failed to create temp file: {}", e);
-                *status.lock().unwrap() = UpdateStatus::UpdateError;
-                *error_message.lock().unwrap() = Some(format!("Failed to create temp file: {}", e));
+                *status.lock() = UpdateStatus::UpdateError;
+                *error_message.lock() = Some(format!("Failed to create temp file: {}", e));
                 return;
             }
         };
 
         if let Err(e) = file.write_all(response.as_bytes()) {
             error!("Failed to write to temp file: {}", e);
-            *status.lock().unwrap() = UpdateStatus::UpdateError;
-            *error_message.lock().unwrap() = Some(format!("Failed to write temp file: {}", e));
+            *status.lock() = UpdateStatus::UpdateError;
+            *error_message.lock() = Some(format!("Failed to write temp file: {}", e));
             return;
         }
 
@@ -375,8 +376,8 @@ pub fn perform_update(state: &mut UpdateState) {
                 old_path.display(),
                 e
             );
-            *status.lock().unwrap() = UpdateStatus::UpdateError;
-            *error_message.lock().unwrap() = Some(format!("Failed to backup current file: {}", e));
+            *status.lock() = UpdateStatus::UpdateError;
+            *error_message.lock() = Some(format!("Failed to backup current file: {}", e));
             return;
         }
 
@@ -390,13 +391,13 @@ pub fn perform_update(state: &mut UpdateState) {
             );
             // Try to restore the old file
             let _ = fs::rename(&old_path, &install_path);
-            *status.lock().unwrap() = UpdateStatus::UpdateError;
-            *error_message.lock().unwrap() = Some(format!("Failed to install new file: {}", e));
+            *status.lock() = UpdateStatus::UpdateError;
+            *error_message.lock() = Some(format!("Failed to install new file: {}", e));
             return;
         }
 
         info!("Update completed successfully");
-        *status.lock().unwrap() = UpdateStatus::UpdateSuccessful;
+        *status.lock() = UpdateStatus::UpdateSuccessful;
     });
 
     state.tasks.push(handle);
@@ -426,7 +427,7 @@ pub fn draw_update_window(ui: &Ui, state: &mut UpdateState) {
                 ui.text(format!("Current version: {}", version_to_string(&current)));
             }
 
-            if let Some(new_ver) = *state.new_version.lock().unwrap() {
+            if let Some(new_ver) = *state.new_version.lock() {
                 let _green = ui.push_style_color(StyleColor::Text, [0.3, 1.0, 0.3, 1.0]);
                 ui.text(format!("New version: {}", version_to_string(&new_ver)));
             }
@@ -457,7 +458,7 @@ pub fn draw_update_window(ui: &Ui, state: &mut UpdateState) {
                 }
                 UpdateStatus::UpdateError => {
                     let _red = ui.push_style_color(StyleColor::Text, [1.0, 0.3, 0.3, 1.0]);
-                    if let Some(ref msg) = *state.error_message.lock().unwrap() {
+                    if let Some(ref msg) = *state.error_message.lock() {
                         ui.text(format!("Update failed: {}", msg));
                     } else {
                         ui.text("Update failed!");
