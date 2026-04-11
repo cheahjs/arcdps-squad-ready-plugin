@@ -11,6 +11,7 @@ use crate::audio::AudioTrack;
 use crate::file_picker::FilePicker;
 use crate::plugin::AUDIO_PLAYER;
 use crate::settings::{Settings, SoundStatus};
+use crate::MutexExt;
 
 /// Cached output device list to avoid querying the audio API every frame.
 struct DeviceCache {
@@ -43,11 +44,11 @@ impl DeviceCache {
 static DEVICE_CACHE: Lazy<Mutex<DeviceCache>> = Lazy::new(|| Mutex::new(DeviceCache::new()));
 
 fn get_output_devices() -> Vec<String> {
-    DEVICE_CACHE.lock().unwrap().get()
+    DEVICE_CACHE.lock_or_recover().get()
 }
 
 fn invalidate_device_cache() {
-    DEVICE_CACHE.lock().unwrap().invalidate();
+    DEVICE_CACHE.lock_or_recover().invalidate();
 }
 
 pub fn draw(
@@ -140,7 +141,7 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
             .is_ok()
             && track.is_valid()
         {
-            AUDIO_PLAYER.lock().unwrap().play_track(&track);
+            AUDIO_PLAYER.lock_or_recover().play_track(&track);
         }
     }
 
@@ -216,7 +217,7 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
             .is_ok()
             && track.is_valid()
         {
-            AUDIO_PLAYER.lock().unwrap().play_track(&track);
+            AUDIO_PLAYER.lock_or_recover().play_track(&track);
         }
     }
 
@@ -303,7 +304,7 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
             && settings.audio_output_device.is_some()
         {
             settings.audio_output_device = None;
-            AUDIO_PLAYER.lock().unwrap().set_device(None);
+            AUDIO_PLAYER.lock_or_recover().set_device(None);
         }
 
         // Device options
@@ -325,7 +326,7 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
     if ui.button("Reset Audio") {
         invalidate_device_cache();
         let device = settings.audio_output_device.clone();
-        AUDIO_PLAYER.lock().unwrap().set_device(device);
+        AUDIO_PLAYER.lock_or_recover().set_device(device);
     }
 }
 

@@ -8,6 +8,7 @@ use crate::audio::sounds;
 use crate::audio::AudioTrack;
 use crate::plugin::AUDIO_PLAYER;
 use crate::settings::Settings;
+use crate::MutexExt;
 
 pub trait SquadUser {
     fn account_name(&self) -> Option<&str>;
@@ -91,7 +92,7 @@ impl SquadNotifier for RealSquadNotifier {
         let _ = track.load_from_path(path, sounds::READY_CHECK, settings.ready_check_volume);
 
         if track.is_valid() {
-            AUDIO_PLAYER.lock().unwrap().play_track(&track);
+            AUDIO_PLAYER.lock_or_recover().play_track(&track);
         }
     }
 
@@ -101,7 +102,7 @@ impl SquadNotifier for RealSquadNotifier {
         let _ = track.load_from_path(path, sounds::SQUAD_READY, settings.squad_ready_volume);
 
         if track.is_valid() {
-            AUDIO_PLAYER.lock().unwrap().play_track(&track);
+            AUDIO_PLAYER.lock_or_recover().play_track(&track);
         }
     }
 }
