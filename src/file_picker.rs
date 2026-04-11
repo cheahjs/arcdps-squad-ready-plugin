@@ -132,14 +132,16 @@ impl DirCache {
                     })
                     .collect();
 
-                // Sort: directories first, then alphabetically
+                // Sort: directories first, then case-insensitive alphabetically
                 entries.sort_by(|a, b| {
                     if a.is_dir && !b.is_dir {
                         Ordering::Less
                     } else if !a.is_dir && b.is_dir {
                         Ordering::Greater
                     } else {
-                        a.name.cmp(&b.name)
+                        a.name
+                            .to_lowercase()
+                            .cmp(&b.name.to_lowercase())
                     }
                 });
 
