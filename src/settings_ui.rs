@@ -1,13 +1,54 @@
 use arcdps::imgui::{InputFloat, Selectable, Slider, Ui};
 use log::debug;
+use once_cell::sync::Lazy;
 use rodio::cpal::traits::{DeviceTrait, HostTrait};
 use std::path::PathBuf;
+use std::sync::Mutex;
+use std::time::Instant;
 
 use crate::audio::sounds;
 use crate::audio::AudioTrack;
 use crate::file_picker::FilePicker;
 use crate::plugin::AUDIO_PLAYER;
 use crate::settings::{Settings, SoundStatus};
+
+/// Cached output device list to avoid querying the audio API every frame.
+struct DeviceCache {
+    devices: Vec<String>,
+    last_refresh: Instant,
+}
+
+impl DeviceCache {
+    fn new() -> Self {
+        Self {
+            devices: query_output_devices(),
+            last_refresh: Instant::now(),
+        }
+    }
+
+    fn get(&mut self) -> Vec<String> {
+        if self.last_refresh.elapsed().as_secs() > 5 {
+            self.devices = query_output_devices();
+            self.last_refresh = Instant::now();
+        }
+        self.devices.clone()
+    }
+
+    fn invalidate(&mut self) {
+        self.devices = query_output_devices();
+        self.last_refresh = Instant::now();
+    }
+}
+
+static DEVICE_CACHE: Lazy<Mutex<DeviceCache>> = Lazy::new(|| Mutex::new(DeviceCache::new()));
+
+fn get_output_devices() -> Vec<String> {
+    DEVICE_CACHE.lock().unwrap().get()
+}
+
+fn invalidate_device_cache() {
+    DEVICE_CACHE.lock().unwrap().invalidate();
+}
 
 pub fn draw(
     ui: &Ui,
@@ -245,7 +286,7 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
         ui.tooltip_text("Unofficial extras is required for receiving squad member updates.");
     }
 
-    // Output device selection
+    // Output device selection (cached, refreshes every 5 seconds)
     let devices = get_output_devices();
     let current_device = settings
         .audio_output_device
@@ -282,6 +323,7 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
 
     // Reset audio button
     if ui.button("Reset Audio") {
+        invalidate_device_cache();
         let device = settings.audio_output_device.clone();
         AUDIO_PLAYER.lock().unwrap().set_device(device);
     }
@@ -313,7 +355,7 @@ fn get_or_refresh_status(
     status
 }
 
-fn get_output_devices() -> Vec<String> {
+fn query_output_devices() -> Vec<String> {
     let host = rodio::cpal::default_host();
     match host.output_devices() {
         Ok(devices) => devices.filter_map(|d| d.name().ok()).collect(),
