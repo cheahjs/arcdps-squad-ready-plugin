@@ -270,7 +270,6 @@ impl<N: SquadNotifier> SquadTracker<N> {
 
     fn ready_check_completed(&mut self, settings: &Settings) {
         debug!("squad is ready");
-        self.ready_check_nag_time = None;
         self.notifier.flash_window(settings);
         self.notifier.play_squad_ready(settings);
         self.ready_check_ended();
@@ -280,6 +279,7 @@ impl<N: SquadNotifier> SquadTracker<N> {
         debug!("ready check has ended");
         self.in_ready_check = false;
         self.ready_check_start_time = None;
+        self.ready_check_nag_time = None;
     }
 
     fn set_ready_check_nag_time(&mut self, settings: &Settings) {
