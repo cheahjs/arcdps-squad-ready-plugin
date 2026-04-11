@@ -120,6 +120,7 @@ impl AudioTrack {
             Err(error) => {
                 self.data = None;
                 self.status_message = format!("Failed to decode '{}': {}", path, error);
+                return Err(anyhow::anyhow!("failed to decode '{}': {}", path, error));
             }
         }
 
