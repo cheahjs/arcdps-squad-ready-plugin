@@ -7,7 +7,7 @@ use crate::audio::sounds;
 use crate::audio::AudioTrack;
 use crate::file_picker::FilePicker;
 use crate::plugin::AUDIO_PLAYER;
-use crate::settings::Settings;
+use crate::settings::{Settings, SoundStatus};
 
 pub fn draw(
     ui: &Ui,
@@ -103,15 +103,16 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         }
     }
 
-    // Show status (same line as Play button)
-    {
-        let mut track = AudioTrack::new();
-        let path = settings.ready_check_path.as_deref().unwrap_or("");
-        let _ = track.load_from_path(path, sounds::READY_CHECK, settings.ready_check_volume);
-        if !track.is_valid() && !track.status_message.is_empty() {
-            ui.same_line();
-            ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
-        }
+    // Show status (same line as Play button) - use cached status to avoid per-frame disk I/O
+    let status = get_or_refresh_status(
+        &mut settings.ready_check_status,
+        &settings.ready_check_path,
+        settings.ready_check_volume,
+        sounds::READY_CHECK,
+    );
+    if !status.valid && !status.message.is_empty() {
+        ui.same_line();
+        ui.text_colored([1.0, 0.0, 0.0, 1.0], &status.message);
     }
 
     // Nag options
@@ -178,15 +179,16 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
         }
     }
 
-    // Show status (same line as Play button)
-    {
-        let mut track = AudioTrack::new();
-        let path = settings.squad_ready_path.as_deref().unwrap_or("");
-        let _ = track.load_from_path(path, sounds::SQUAD_READY, settings.squad_ready_volume);
-        if !track.is_valid() && !track.status_message.is_empty() {
-            ui.same_line();
-            ui.text_colored([1.0, 0.0, 0.0, 1.0], &track.status_message);
-        }
+    // Show status (same line as Play button) - use cached status to avoid per-frame disk I/O
+    let status = get_or_refresh_status(
+        &mut settings.squad_ready_status,
+        &settings.squad_ready_path,
+        settings.squad_ready_volume,
+        sounds::SQUAD_READY,
+    );
+    if !status.valid && !status.message.is_empty() {
+        ui.same_line();
+        ui.text_colored([1.0, 0.0, 0.0, 1.0], &status.message);
     }
 }
 
@@ -283,6 +285,32 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
         let device = settings.audio_output_device.clone();
         AUDIO_PLAYER.lock().unwrap().set_device(device);
     }
+}
+
+/// Returns cached sound status, refreshing only when the path or volume changes.
+fn get_or_refresh_status(
+    cached: &mut Option<SoundStatus>,
+    path: &Option<String>,
+    volume: i32,
+    default: &'static [u8],
+) -> SoundStatus {
+    if let Some(ref status) = cached {
+        if status.path.as_ref() == path.as_ref() && status.volume == volume {
+            return status.clone();
+        }
+    }
+
+    let mut track = AudioTrack::new();
+    let path_str = path.as_deref().unwrap_or("");
+    let _ = track.load_from_path(path_str, default, volume);
+    let status = SoundStatus {
+        path: path.clone(),
+        volume,
+        valid: track.is_valid(),
+        message: track.status_message,
+    };
+    *cached = Some(status.clone());
+    status
 }
 
 fn get_output_devices() -> Vec<String> {
