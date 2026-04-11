@@ -290,6 +290,10 @@ impl<N: SquadNotifier> SquadTracker<N> {
     }
 
     fn all_players_readied(&self) -> bool {
+        if self.cached_players.is_empty() {
+            return false;
+        }
+
         for (account_name, user) in &self.cached_players {
             // Only check squad members (not invited/applied)
             if user.role != UserRole::SquadLeader
