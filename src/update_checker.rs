@@ -467,8 +467,8 @@ pub fn draw_update_window(ui: &Ui, state: &mut UpdateState) {
             }
         });
 
-    // Handle window close
-    if !open {
+    // Handle window close - don't allow dismissing during download
+    if !open && status != UpdateStatus::UpdateInProgress {
         state.set_status(UpdateStatus::Dismissed);
     }
 }
