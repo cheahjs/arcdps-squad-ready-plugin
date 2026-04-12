@@ -23,7 +23,7 @@ use std::sync::atomic::{AtomicPtr, Ordering};
 #[cfg(windows)]
 static GAME_HWND: AtomicPtr<std::ffi::c_void> = AtomicPtr::new(std::ptr::null_mut());
 
-/// Set the game window handle (called once from raw_wnd_nofilter callback)
+/// Set the game window handle (called from raw_wnd_nofilter on every window message, but only stores on the first call)
 #[cfg(windows)]
 pub fn set_game_hwnd(hwnd: windows::Win32::Foundation::HWND) {
     // Only set if not already set (compare_exchange from null)

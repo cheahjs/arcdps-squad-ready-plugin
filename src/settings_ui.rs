@@ -165,6 +165,8 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     )
     .step(0.1)
     .build();
+    settings.ready_check_nag_interval_seconds =
+        settings.ready_check_nag_interval_seconds.max(1.0);
 }
 
 fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {

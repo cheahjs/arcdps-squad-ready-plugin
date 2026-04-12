@@ -282,8 +282,9 @@ impl<N: SquadNotifier> SquadTracker<N> {
     }
 
     fn set_ready_check_nag_time(&mut self, settings: &Settings) {
-        // Clamp to >= 0.0 to prevent panic from Duration::from_secs_f32 on negative values
-        let interval = settings.ready_check_nag_interval_seconds.max(0.0);
+        // Clamp to >= 1.0 to prevent per-frame sound spam at 0 and
+        // panics from Duration::from_secs_f32 on negative/NaN values
+        let interval = settings.ready_check_nag_interval_seconds.max(1.0);
         let nag_duration = Duration::from_secs_f32(interval);
         self.ready_check_nag_time = Some(Instant::now() + nag_duration);
     }
@@ -485,7 +486,7 @@ mod tests {
         let mut tracker = SquadTracker::with_notifier(notifier.clone());
         let mut settings = Settings::default();
         settings.ready_check_nag = true;
-        settings.ready_check_nag_interval_seconds = 0.0; // Instant nag for testing
+        settings.ready_check_nag_interval_seconds = 1.0;
 
         // Start ready check
         let users = vec![MockUser {
@@ -499,6 +500,9 @@ mod tests {
         // Initial start calls: 1 flash, 1 ready check play
         let initial_plays = notifier.ready_check_plays.load(Ordering::SeqCst);
         assert!(initial_plays >= 1);
+
+        // Force nag time into the past so tick triggers immediately
+        tracker.ready_check_nag_time = Some(Instant::now() - Duration::from_secs(1));
 
         // Tick should trigger nag
         tracker.tick(&settings);
