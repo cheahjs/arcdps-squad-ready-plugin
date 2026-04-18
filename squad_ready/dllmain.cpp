@@ -15,7 +15,6 @@
 #include "extension/Singleton.h"
 #include "extension/UpdateCheckerBase.h"
 #include "extension/Widgets.h"
-#include "extension/Windows/PositioningComponent.h"
 #include "extension/arcdps_structs.h"
 #include "imgui/imgui.h"
 #include "unofficial_extras/Definitions.h"
