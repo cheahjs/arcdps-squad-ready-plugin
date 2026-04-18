@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include <array>
 #include <string>
 
 #include "extension/UpdateChecker.h"
@@ -16,6 +17,11 @@ extern bool unofficial_extras_loaded;
 
 // Updating myself stuff
 extern std::unique_ptr<UpdateCheckerBase::UpdateState> update_state;
+
+// Windows VK state tracked from WndProc. Replaces the pre-1.87 io.KeysDown
+// array that ImGui removed — arcdps dispatches the WndProc events to us and
+// we track them ourselves since arc_global_mod1/2 are virtual-key codes.
+extern std::array<bool, 256> vk_down;
 
 // arc keyboard modifier
 extern DWORD arc_global_mod1;

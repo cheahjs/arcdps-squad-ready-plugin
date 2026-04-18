@@ -80,7 +80,7 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       case WM_KEYUP:
       case WM_SYSKEYUP: {
         const int vkey = (int)wParam;
-        io->KeysDown[vkey] = false;
+        if (vkey >= 0 && vkey < 256) globals::vk_down[vkey] = false;
         if (vkey == VK_CONTROL) {
           io->KeyCtrl = false;
         } else if (vkey == VK_MENU) {
@@ -100,14 +100,14 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         } else if (vkey == VK_SHIFT) {
           io->KeyShift = true;
         }
-        io->KeysDown[vkey] = true;
+        if (vkey >= 0 && vkey < 256) globals::vk_down[vkey] = true;
         break;
       }
       case WM_ACTIVATEAPP: {
         globals::UpdateArcExports();
         if (!wParam) {
-          io->KeysDown[globals::arc_global_mod1] = false;
-          io->KeysDown[globals::arc_global_mod2] = false;
+          if (globals::arc_global_mod1 < 256) globals::vk_down[globals::arc_global_mod1] = false;
+          if (globals::arc_global_mod2 < 256) globals::vk_down[globals::arc_global_mod2] = false;
         }
         break;
       }
