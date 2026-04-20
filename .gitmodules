@@ -4,10 +4,10 @@
 [submodule "arcdps-extension"]
 	path = modules/extension
 	url = https://github.com/cheahjs/arcdps-extension
-	branch = fix/squad-ready-build-patch
+	branch = feat/imgui-1.92.7
 [submodule "imgui"]
 	path = modules/imgui
-	url = https://github.com/knoxfighter/imgui
+	url = https://github.com/ocornut/imgui
 [submodule "miniaudio"]
 	path = modules/miniaudio
 	url = https://github.com/mackron/miniaudio

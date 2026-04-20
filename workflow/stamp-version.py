@@ -11,7 +11,13 @@ def main():
     version = sys.argv[1]
     run_id = sys.argv[2]
     git_hash = sys.argv[3]
-    binary_version = f"{version.replace('.', ',')},{run_id}"
+    # Strip leading 'v' and any pre-release suffix (e.g. v0.6.1-imgui192.0 -> 0.6.1)
+    semver = re.sub(r'^v', '', version).split('-')[0]
+    parts = semver.split(',') if ',' in semver else semver.split('.')
+    # Pad to 3 numeric parts, then append run_id as the 4th
+    while len(parts) < 3:
+        parts.append('0')
+    binary_version = f"{','.join(parts[:3])},{run_id}"
     string_version = f"{version}+{run_id}-{git_hash}"
     print(f"Stamping '{binary_version}' and '{string_version}'")
 
