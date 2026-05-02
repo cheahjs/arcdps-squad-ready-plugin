@@ -1,4 +1,4 @@
-use arcdps::imgui::{InputFloat, Selectable, Slider, Ui};
+use arcdps::imgui::Ui;
 use log::debug;
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
@@ -95,7 +95,7 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     ui.text_disabled("Ready Check");
 
     // Volume
-    Slider::new("Volume - Ready Check", 0, 100).build(ui, &mut settings.ready_check_volume);
+    ui.slider("Volume - Ready Check", 0, 100, &mut settings.ready_check_volume);
 
     // Path input (inline label)
     let mut path = settings.ready_check_path.clone().unwrap_or_default();
@@ -158,8 +158,7 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
 
     // Nag options
     ui.checkbox("Nag if not readied", &mut settings.ready_check_nag);
-    InputFloat::new(
-        ui,
+    ui.input_float(
         "Nag interval in seconds",
         &mut settings.ready_check_nag_interval_seconds,
     )
@@ -173,7 +172,7 @@ fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     ui.text_disabled("Squad Ready");
 
     // Volume
-    Slider::new("Volume - Squad Ready", 0, 100).build(ui, &mut settings.squad_ready_volume);
+    ui.slider("Volume - Squad Ready", 0, 100, &mut settings.squad_ready_volume);
 
     // Path input (inline label)
     let mut path = settings.squad_ready_path.clone().unwrap_or_default();
@@ -299,9 +298,10 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
     if let Some(_combo) = ui.begin_combo("Output device", preview) {
         // Default option
         let is_default_selected = settings.audio_output_device.is_none();
-        if Selectable::new("Default")
+        if ui
+            .selectable_config("Default")
             .selected(is_default_selected)
-            .build(ui)
+            .build()
             && settings.audio_output_device.is_some()
         {
             settings.audio_output_device = None;
@@ -311,7 +311,7 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
         // Device options
         for device in &devices {
             let selected = settings.audio_output_device.as_ref() == Some(device);
-            if Selectable::new(device).selected(selected).build(ui)
+            if ui.selectable_config(device).selected(selected).build()
                 && settings.audio_output_device.as_ref() != Some(device)
             {
                 settings.audio_output_device = Some(device.clone());

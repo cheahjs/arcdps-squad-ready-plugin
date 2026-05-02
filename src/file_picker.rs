@@ -1,6 +1,6 @@
 // Adapted from https://github.com/tseli0s/imfile
 // MIT License - Aggelos Tselios
-use arcdps::imgui::{ChildWindow, Condition, Selectable, Ui, Window};
+use arcdps::imgui::{ChildFlags, Condition, Ui};
 use log::error;
 use std::cmp::Ordering;
 use std::fs;
@@ -246,16 +246,17 @@ impl FilePicker {
         let cache_error = &self.cache.error;
         let cache = &self.cache;
 
-        Window::new(&self.title)
+        ui.window(&self.title)
             .opened(&mut window_open)
             .size([600.0, 400.0], Condition::FirstUseEver)
-            .build(ui, || {
+            .build(|| {
                 // Drive selector and path bar
-                if let Some(_child) = ChildWindow::new("Path Selection")
+                if let Some(_child) = ui
+                    .child_window("Path Selection")
                     .horizontal_scrollbar(false)
-                    .border(true)
+                    .child_flags(ChildFlags::BORDERS)
                     .size([0.0, 40.0])
-                    .begin(ui)
+                    .begin()
                 {
                     // Drive selector dropdown
                     let current_drive = current_dir
@@ -276,7 +277,7 @@ impl FilePicker {
                         for drive in drives {
                             let drive_str = drive.to_string_lossy();
                             let is_selected = drive_str == current_drive;
-                            if Selectable::new(&drive_str).selected(is_selected).build(ui)
+                            if ui.selectable_config(&drive_str).selected(is_selected).build()
                                 && drive.is_dir()
                             {
                                 new_dir = Some(drive.clone());
@@ -314,10 +315,11 @@ impl FilePicker {
                     .build();
 
                 // File list
-                if let Some(_child) = ChildWindow::new("Select file")
-                    .border(true)
+                if let Some(_child) = ui
+                    .child_window("Select file")
+                    .child_flags(ChildFlags::BORDERS)
                     .size([0.0, -40.0])
-                    .begin(ui)
+                    .begin()
                 {
                     if let Some(ref err) = cache_error {
                         ui.text_colored([1.0, 0.0, 0.0, 1.0], err);
@@ -336,10 +338,10 @@ impl FilePicker {
                 }
 
                 // Bottom bar
-                if let Some(_child) = ChildWindow::new("controls")
-                    .border(false)
+                if let Some(_child) = ui
+                    .child_window("controls")
                     .size([0.0, 0.0])
-                    .begin(ui)
+                    .begin()
                 {
                     if ui.button("Back") {
                         if let Some(parent) = current_dir.parent() {

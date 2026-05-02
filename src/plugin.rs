@@ -170,16 +170,16 @@ impl Plugin {
 
     #[cfg(debug_assertions)]
     fn render_debug_window(&mut self, ui: &Ui) {
-        use arcdps::imgui::{Condition, Window};
+        use arcdps::imgui::Condition;
 
         if !self.debug_window_visible {
             return;
         }
 
-        Window::new("Squad Ready Debug")
+        ui.window("Squad Ready Debug")
             .opened(&mut self.debug_window_visible)
             .size([400.0, 300.0], Condition::FirstUseEver)
-            .build(ui, || {
+            .build(|| {
                 ui.text(format!("Extras Loaded: {}", self.extras_loaded));
                 ui.text(format!("Self Account: {}", self.self_account_name));
                 ui.separator();

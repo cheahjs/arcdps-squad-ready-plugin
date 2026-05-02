@@ -1,4 +1,4 @@
-use arcdps::imgui::{Condition, StyleColor, Ui, Window};
+use arcdps::imgui::{Condition, StyleColor, Ui};
 use log::*;
 use serde::Deserialize;
 use std::fs;
@@ -414,12 +414,12 @@ pub fn draw_update_window(ui: &Ui, state: &mut UpdateState) {
 
     let mut open = true;
 
-    Window::new("Squad Ready Update")
+    ui.window("Squad Ready Update")
         .opened(&mut open)
         .collapsible(false)
         .always_auto_resize(true)
         .size([350.0, 0.0], Condition::FirstUseEver)
-        .build(ui, || {
+        .build(|| {
             // Show version info
             if let Some(current) = state.current_version {
                 let _red = ui.push_style_color(StyleColor::Text, [1.0, 0.3, 0.3, 1.0]);
