@@ -10,6 +10,8 @@ HMODULE self_dll;
 HWND some_window = nullptr;
 bool unofficial_extras_loaded;
 
+std::array<bool, 256> vk_down{};
+
 // updates
 std::unique_ptr<UpdateCheckerBase::UpdateState> update_state = nullptr;
 
@@ -44,9 +46,7 @@ void UpdateArcExports() {
 }
 
 bool ModsPressed() {
-  const auto io = &ImGui::GetIO();
-
-  return io->KeysDown[arc_global_mod1] && io->KeysDown[arc_global_mod2];
+  return vk_down[arc_global_mod1] && vk_down[arc_global_mod2];
 }
 
 bool CanMoveWindows() {
