@@ -200,19 +200,19 @@ impl<N: SquadNotifier> SquadTracker<N> {
                     },
                 );
 
-                if let Some(old_user) = old_user {
-                    // User updated
-                    if user.role() == UserRole::SquadLeader {
-                        if user.ready_status() && !old_user.ready_status {
-                            // Squad leader has started a ready check
-                            self.ready_check_started(settings);
-                        } else if !user.ready_status() && old_user.ready_status {
-                            // Squad leader has ended a ready check
-                            self.ready_check_ended();
-                        }
-                    } else if self.in_ready_check && self.all_players_readied() {
-                        self.ready_check_completed(settings);
+                let old_ready_status = old_user.map(|u| u.ready_status).unwrap_or(false);
+
+                // User updated
+                if user.role() == UserRole::SquadLeader {
+                    if user.ready_status() && !old_ready_status {
+                        // Squad leader has started a ready check
+                        self.ready_check_started(settings);
+                    } else if !user.ready_status() && old_ready_status {
+                        // Squad leader has ended a ready check
+                        self.ready_check_ended();
                     }
+                } else if self.in_ready_check && self.all_players_readied() {
+                    self.ready_check_completed(settings);
                 }
             } else {
                 // User removed
