@@ -95,7 +95,12 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     ui.text_disabled("Ready Check");
 
     // Volume
-    ui.slider("Volume - Ready Check", 0, 100, &mut settings.ready_check_volume);
+    ui.slider(
+        "Volume - Ready Check",
+        0,
+        100,
+        &mut settings.ready_check_volume,
+    );
 
     // Path input (inline label)
     let mut path = settings.ready_check_path.clone().unwrap_or_default();
@@ -164,15 +169,19 @@ fn draw_ready_check(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     )
     .step(0.1)
     .build();
-    settings.ready_check_nag_interval_seconds =
-        settings.ready_check_nag_interval_seconds.max(1.0);
+    settings.ready_check_nag_interval_seconds = settings.ready_check_nag_interval_seconds.max(1.0);
 }
 
 fn draw_squad_ready(ui: &Ui, settings: &mut Settings, picker: &mut FilePicker) {
     ui.text_disabled("Squad Ready");
 
     // Volume
-    ui.slider("Volume - Squad Ready", 0, 100, &mut settings.squad_ready_volume);
+    ui.slider(
+        "Volume - Squad Ready",
+        0,
+        100,
+        &mut settings.squad_ready_volume,
+    );
 
     // Path input (inline label)
     let mut path = settings.squad_ready_path.clone().unwrap_or_default();
@@ -315,9 +324,7 @@ fn draw_status_common(ui: &Ui, settings: &mut Settings, extras_loaded: bool) {
                 && settings.audio_output_device.as_ref() != Some(device)
             {
                 settings.audio_output_device = Some(device.clone());
-                AUDIO_PLAYER
-                    .lock()
-                    .set_device(Some(device.clone()));
+                AUDIO_PLAYER.lock().set_device(Some(device.clone()));
             }
         }
     }

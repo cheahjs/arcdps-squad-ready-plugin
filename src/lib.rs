@@ -59,9 +59,7 @@ fn imgui(ui: &Ui, not_loading_or_character_selection: bool) {
 }
 
 fn extras_init(addon_info: arcdps::extras::ExtrasAddonInfo, account_name: Option<&str>) {
-    PLUGIN
-        .lock()
-        .extras_init(&addon_info, account_name);
+    PLUGIN.lock().extras_init(&addon_info, account_name);
 }
 
 fn extras_squad_update(users: UserInfoIter) {
@@ -78,10 +76,7 @@ fn init() -> Result<(), Option<String>> {
 
     check_imgui_version();
 
-    PLUGIN
-        .lock()
-        .load()
-        .map_err(|e| Some(e.to_string()))
+    PLUGIN.lock().load().map_err(|e| Some(e.to_string()))
 }
 
 fn check_imgui_version() {

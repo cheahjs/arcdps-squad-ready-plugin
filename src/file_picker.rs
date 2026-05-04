@@ -139,9 +139,7 @@ impl DirCache {
                     } else if !a.is_dir && b.is_dir {
                         Ordering::Greater
                     } else {
-                        a.name
-                            .to_lowercase()
-                            .cmp(&b.name.to_lowercase())
+                        a.name.to_lowercase().cmp(&b.name.to_lowercase())
                     }
                 });
 
@@ -277,7 +275,10 @@ impl FilePicker {
                         for drive in drives {
                             let drive_str = drive.to_string_lossy();
                             let is_selected = drive_str == current_drive;
-                            if ui.selectable_config(&drive_str).selected(is_selected).build()
+                            if ui
+                                .selectable_config(&drive_str)
+                                .selected(is_selected)
+                                .build()
                                 && drive.is_dir()
                             {
                                 new_dir = Some(drive.clone());
@@ -338,11 +339,7 @@ impl FilePicker {
                 }
 
                 // Bottom bar
-                if let Some(_child) = ui
-                    .child_window("controls")
-                    .size([0.0, 0.0])
-                    .begin()
-                {
+                if let Some(_child) = ui.child_window("controls").size([0.0, 0.0]).begin() {
                     if ui.button("Back") {
                         if let Some(parent) = current_dir.parent() {
                             let parent_path = parent.to_path_buf();
